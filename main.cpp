@@ -12,12 +12,14 @@ int WINAPI WinMain(HINSTANCE hApp, HINSTANCE hPrev, PSTR arg, int window_mode) {
 	wc.lpszClassName = MAIN_CLASS.c_str();
 	RegisterClass(&wc);
 
+	const int windowx = (int) (1920 - WINDOW_WIDTH)/2;
+	const int windowy = (int) (1080 - WINDOW_HEIGHT - TITLE_BAR)/2;
 	HWND hDashboard = CreateWindowEx(
-				0, MAIN_CLASS.c_str(),
+				WS_EX_LAYERED, MAIN_CLASS.c_str(),
 				L"SONAR",
-				WS_OVERLAPPEDWINDOW,
-				CW_USEDEFAULT, CW_USEDEFAULT, // Position
-				WINDOW_WIDTH, WINDOW_HEIGHT, // Size
+				WS_POPUP,
+				windowx, windowy,
+				WINDOW_WIDTH, WINDOW_HEIGHT + TITLE_BAR, // Size
 				NULL, NULL,
 				hApp, NULL);
 
@@ -26,6 +28,8 @@ int WINAPI WinMain(HINSTANCE hApp, HINSTANCE hPrev, PSTR arg, int window_mode) {
 		return 0;
 	}
 
+	// Set Transparency of window
+	SetLayeredWindowAttributes(hDashboard, TRANSPARENT_COLOR, 0, LWA_COLORKEY);
 	ShowWindow(hDashboard, window_mode);  
 	
 	//===============================================
@@ -44,10 +48,44 @@ int WINAPI WinMain(HINSTANCE hApp, HINSTANCE hPrev, PSTR arg, int window_mode) {
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam) {
 	switch (event) {
 		case WM_PAINT: {
+			//=====PAINTING DATA========
+			Paint paint;
+			PAINTSTRUCT ps;
+			paint.area = BeginPaint(hWnd, &ps);
+			const int window_corner = 25;
+			
+			//=====TRANSPARENCY=========
+			paint.pos.left = 0;
+			paint.pos.top = 0;
+			paint.pos.right = WINDOW_WIDTH;
+			paint.pos.bottom = WINDOW_HEIGHT + TITLE_BAR; 
+			paint.color = TRANSPARENT_COLOR;
 
-			// Background painting
+			paint.FillRect();
+			
+			//=====BACKGROUND===========
+			paint.pos = ps.rcPaint;
+			paint.color = BACKGROUND_COLOR;
+			
+			paint.RoundRect(window_corner);	
+						
+			//====TITLE BAR=============
+			paint.pos.left = 0;
+			paint.pos.top = 0;
+			paint.pos.right = WINDOW_WIDTH;
+			paint.pos.bottom = TITLE_BAR;
+			paint.color = MID_COLOR;
+
+			paint.RoundRect(window_corner);
+		
+			paint.pos.top = 15;
+			paint.FillRect();
+	
+
+			EndPaint(hWnd, &ps);
 			break;
 		}
+	
 		case WM_DESTROY: {
 			PostQuitMessage(0);
 			return 0;

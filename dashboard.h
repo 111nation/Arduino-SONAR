@@ -8,10 +8,13 @@
 // Libraries
 #include "FontLib/font.h"
 
+
 #define WINDOW_WIDTH 1000  
+#define TITLE_BAR 30
 #define WINDOW_HEIGHT 500
 
 // Colors
+#define TRANSPARENT_COLOR RGB(254, 254, 254)
 #define BACKGROUND_COLOR 0x000000
 #define MID_COLOR 0x66666E
 #define ACCENT_0 0xF4F4F6 // Lightest
@@ -22,17 +25,29 @@
 //  PAINTING DATA
 // =================
 class Paint {
+	private:
+	void ApplyColor();
+
 	public:
 	HDC area=nullptr;
 	HBRUSH hbrush=nullptr;
 	
-	int x=0; 
-	int y=0; 
-	int xend=0;
-	int yend=0;
+	RECT pos;
+	struct Corner {
+		int x = 0;
+		int y = 0;
+	};
+	Corner corner;
 
 	COLORREF color = 0;
-	Font * font;
 
 	~Paint();
+
+	//====PAINT UTILS====
+	void FillRect();
+	void RoundRect(int corner_radius);
+	void RoundRect(int cornerx, int cornery);
+
+
+	Font * font = nullptr;
 };
