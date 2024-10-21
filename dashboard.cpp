@@ -1,10 +1,6 @@
 #include "dashboard.h"
 
 Paint::~Paint() {
-	if (font != NULL) {
-		delete font;
-	}
-
 	if (hbrush) {
 		DeleteObject(hbrush);
 		hbrush = NULL;
@@ -22,6 +18,13 @@ Paint::~Paint() {
 
 }
 
+void Paint::Line() {
+	UpdateColor();
+
+	MoveToEx(area, x, y, NULL);
+	LineTo(area, xend, yend);
+}
+
 void Paint::RoundRect(int corner_radius) {
 	this->RoundRect(corner_radius, corner_radius);
 }
@@ -36,6 +39,25 @@ void Paint::Rectangle() {
 	UpdateColor();
 
 	::Rectangle(area, x, y, xend, yend);
+}
+
+void Paint::Text(std::string text) {
+	Text(text.c_str());
+}
+
+void Paint::Text(const char text) {
+	UpdateColor();
+	
+	// Updates area to support font
+	HFONT hOldFont;
+	GetObject(area, 0, &hOldFont); 
+	SelectObject(area, font.Use());
+	
+	TextOutA(area, x, y, &text, sizeof(text));
+	
+	// Retrieves previous state (old font)
+	SelectObject(area, hOldFont);
+	DeleteObject(hOldFont);
 }
 
 //====================

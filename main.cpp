@@ -78,10 +78,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.color = BACKGROUND_COLOR;
 
 			//====WINDOW BORDERS========
+			const COLORREF border_color = GetSysColor(COLOR_WINDOWFRAME);
 			paint.hWnd = hWnd;
 			paint.border.width = 1;
 			paint.border.style = PS_SOLID;
-			paint.border.color = RGB(67, 74, 88);
+			paint.border.color = border_color; 
 			
 			paint.RoundRect(window_corner);
 
@@ -93,17 +94,95 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.yend = TITLE_BAR-1;
 			paint.color = 0;
 			paint.border.width = 1;
-			paint.border.color = RGB(67, 74, 88);
+			paint.border.color = border_color;
 
 			paint.RoundRect(window_corner);
 			
 			paint.border.width = 0;
-			paint.y = (int) window_corner/2;
+			paint.y = (int) (window_corner/2 - 1);
 			paint.yend = TITLE_BAR;
 			paint.x = 1;
 			paint.xend = WINDOW_WIDTH;
 
+			paint.Rectangle();
+
+
+			//=====TITLE BUTTONS=======
+			const int button_width = 0.03 * WINDOW_WIDTH;	
+			const int button_height = TITLE_BAR;
+			
+			// MINIMIZE
+			const int icon_width = 1;
+			paint.Reset();
+			paint.x = WINDOW_WIDTH - button_width*2;
+			paint.y = 1;
+			paint.xend = paint.x + button_width;
+			paint.yend = button_height;
+			paint.color = RGB(44, 46, 50);
+		       	paint.Rectangle();	
+
+			paint.x = paint.x + 9;
+			paint.xend = paint.xend - 9;
+			paint.y = (int) button_height/2;
+			paint.yend = (int) button_height/2;
+			paint.border.color = RGB(255, 255, 255);
+			paint.border.width = icon_width;
+			paint.Line();
+
+			//EXIT
+			paint.Reset();
+			paint.border.width = 1;
+			paint.border.color = border_color;
+			paint.color = RGB(242, 63, 66);		
+			paint.y = 0;
+			paint.yend = button_height-1;
+			paint.x = WINDOW_WIDTH - button_width-1; // Perfect square
+			paint.xend = WINDOW_WIDTH;
+
+			paint.RoundRect(window_corner);
+
+			// Make left and bottom flat rectangle
+			paint.y = 1;
+			paint.yend = button_height;
+			paint.border.width = 0;
+			paint.xend = WINDOW_WIDTH - (button_width / 2);
 			paint.Rectangle();	
+
+			paint.xend = WINDOW_WIDTH;
+			paint.y = button_height / 2;
+			paint.Rectangle();
+
+			// X
+			// \*
+			const int x_cross = WINDOW_WIDTH - (button_width / 2) - 1;
+			const int y_cross = button_height/2;
+			paint.x = x_cross - 5;
+			paint.y = y_cross - 5;
+			paint.xend = x_cross + 6;
+			paint.yend = y_cross + 6;
+			paint.border.color = RGB(255,255,255);
+			paint.border.width = icon_width;
+
+			paint.Line();
+			
+			// */
+			paint.x = x_cross - 5;
+			paint.y = y_cross + 5;
+			paint.xend = x_cross + 6;
+			paint.yend = y_cross - 6;
+
+			paint.Line();
+
+			//=====TITLE TEXT========
+			paint.font.name = "Montserrat";
+			paint.font.size = 20;
+			paint.font.weight = 500;
+			paint.x = 20;
+			paint.y = TITLE_BAR / 2;
+			paint.color = RGB(255, 255, 255);
+
+			paint.Text("SONAR");
+
 
 			EndPaint(hWnd, &ps);
 			break;

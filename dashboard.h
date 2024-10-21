@@ -4,13 +4,14 @@
 #include <windows.h>
 
 #include <string>
+#include <sstream>
 
 // Libraries
 #include "FontLib/font.h"
 
 
 #define WINDOW_WIDTH 1000  
-#define TITLE_BAR 20
+#define TITLE_BAR 23
 #define WINDOW_HEIGHT 500
 
 // Colors
@@ -54,16 +55,19 @@ class Paint {
 	};
 	Border border;
 
+	Font font;
+
 	~Paint();
 	void Reset();
 	void RECTtoPos(RECT rect);
 
 	//====PAINT UTILS====
+	void Line();
 	void Rectangle();
 	void RoundRect(int corner_radius);
 	void RoundRect(int cornerx, int cornery);
+	void Text(const std::string text);
+	void Text(const char text);
 	void Transparency(int color, BYTE alpha); 
 	void Transparency();
-
-	Font * font = NULL;
 };

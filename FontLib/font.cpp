@@ -1,9 +1,5 @@
 #include "font.h"
 
-Font::Font(std::string font) {
-	font_name = font;
-}
-
 Font::~Font() {
 	if (hFont) {
 		DeleteObject(hFont);
@@ -13,6 +9,7 @@ Font::~Font() {
 
 void Font::Reset() {
 	// Reset attributes
+	name = "Arial";
 	size = 24;
 	italics = FALSE;
 	underline = FALSE;
@@ -27,7 +24,7 @@ HFONT Font::Use() {
 		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
 		CLIP_DEFAULT_PRECIS,
 		0, 0,
-		font_name.c_str());	
+		name.c_str());	
 
 	if (Valid() == false) {
 		DefaultFont();

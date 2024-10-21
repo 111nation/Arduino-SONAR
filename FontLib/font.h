@@ -7,19 +7,18 @@
 class Font {
 	public:
 	// Font Properties
+	std::string name="";
 	int size = 24;
 	DWORD italics = FALSE;
 	DWORD underline = FALSE;
 	int weight = FW_NORMAL;
 
-	Font(std::string font);
 	~Font();	
 
 	HFONT Use();
 	void Reset(); 
 
 	private:
-	std::string font_name="";
  	HFONT hFont=nullptr;
 
 	bool Valid();	
