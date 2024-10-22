@@ -9,7 +9,6 @@ Font::~Font() {
 
 void Font::Reset() {
 	// Reset attributes
-	name = "Arial";
 	size = 24;
 	italics = FALSE;
 	underline = FALSE;

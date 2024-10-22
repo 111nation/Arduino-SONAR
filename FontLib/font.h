@@ -12,6 +12,7 @@ class Font {
 	DWORD italics = FALSE;
 	DWORD underline = FALSE;
 	int weight = FW_NORMAL;
+	COLORREF color = 0;
 
 	~Font();	
 

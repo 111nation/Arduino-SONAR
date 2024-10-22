@@ -8,7 +8,7 @@ Paint::~Paint() {
 
 	if (area) {
 		DeleteObject(area);
-		hbrush = NULL;
+		area = NULL;
 	}
 
 	if (hpen) {
@@ -42,22 +42,15 @@ void Paint::Rectangle() {
 }
 
 void Paint::Text(std::string text) {
-	Text(text.c_str());
-}
-
-void Paint::Text(const char text) {
 	UpdateColor();
 	
-	// Updates area to support font
-	HFONT hOldFont;
-	GetObject(area, 0, &hOldFont); 
+	// Font properties
+	SetTextColor(area, color);
+	SetBkMode(area, TRANSPARENT);
+	// Updates area
 	SelectObject(area, font.Use());
 	
-	TextOutA(area, x, y, &text, sizeof(text));
-	
-	// Retrieves previous state (old font)
-	SelectObject(area, hOldFont);
-	DeleteObject(hOldFont);
+	TextOutA(area, x, y, text.c_str(), text.length());
 }
 
 //====================
@@ -102,7 +95,9 @@ void Paint::Reset() {
 
 	corner.x = 0;
 	corner.y = 0;
-	Transparency(DEF_TRANSPARENT, 0); 
+	Transparency(DEF_TRANSPARENT, 0);
+
+	font.Reset();	
 }
 
 void Paint::Transparency(int color, BYTE alpha) {

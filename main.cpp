@@ -59,7 +59,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			Paint paint;
 			PAINTSTRUCT ps;
 			paint.area = BeginPaint(hWnd, &ps);
-			const int window_corner = 25;
+			const int window_corner = 20;
 //			int margin;
 
 			//=====TRANSPARENCY=========
@@ -118,14 +118,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.y = 1;
 			paint.xend = paint.x + button_width;
 			paint.yend = button_height;
-			paint.color = RGB(44, 46, 50);
+			paint.color = RGB(49, 51, 56);
 		       	paint.Rectangle();	
 
 			paint.x = paint.x + 9;
 			paint.xend = paint.xend - 9;
 			paint.y = (int) button_height/2;
 			paint.yend = (int) button_height/2;
-			paint.border.color = RGB(255, 255, 255);
+			paint.border.color = ACCENT_0;
 			paint.border.width = icon_width;
 			paint.Line();
 
@@ -160,7 +160,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.y = y_cross - 5;
 			paint.xend = x_cross + 6;
 			paint.yend = y_cross + 6;
-			paint.border.color = RGB(255,255,255);
+			paint.border.color = ACCENT_0;
 			paint.border.width = icon_width;
 
 			paint.Line();
@@ -175,13 +175,33 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 			//=====TITLE TEXT========
 			paint.font.name = "Montserrat";
-			paint.font.size = 20;
-			paint.font.weight = 500;
-			paint.x = 20;
-			paint.y = TITLE_BAR / 2;
-			paint.color = RGB(255, 255, 255);
+			paint.font.size = 17;
+			paint.font.weight = 900;
+			paint.x = 12;
+			paint.y = 2;
+			paint.color = ACCENT_0;
 
 			paint.Text("SONAR");
+
+			// SONAR BACKGROUND
+			paint.Reset();
+			paint.x = 70;
+			paint.y = TITLE_BAR-1;
+			paint.xend = WINDOW_WIDTH;
+			paint.yend = WINDOW_HEIGHT + TITLE_BAR;
+			paint.color = MID_COLOR;
+
+			paint.RoundRect(window_corner);
+
+			paint.y = WINDOW_HEIGHT - window_corner;
+			paint.xend = (int) WINDOW_WIDTH / 2;
+			paint.Rectangle();
+
+			paint.y = TITLE_BAR-1;
+			paint.x = (int) WINDOW_WIDTH / 2;
+			paint.yend = (int) (WINDOW_HEIGHT + TITLE_BAR) / 2;
+			paint.xend = WINDOW_WIDTH;
+			paint.Rectangle();
 
 
 			EndPaint(hWnd, &ps);
@@ -223,6 +243,19 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 				}
 			}
 
+			break;
+
+		}
+
+		case WM_MOUSEMOVE: {
+			POINT mouse;
+			GetCursorPos(&mouse);
+			ScreenToClient(hWnd, &mouse);
+
+			if (
+
+
+			break;
 		}
 	}
 	return DefWindowProc(hWnd, event, wParam, lParam);
