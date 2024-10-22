@@ -1,5 +1,10 @@
 #include "dashboard.h"
 
+bool hover_minimize = false;
+bool hover_exit = false;
+int click_minimize = false;
+int click_exit = false;
+
 const std::wstring MAIN_CLASS = L"MAIN_CLASS";
 
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam);
@@ -59,8 +64,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			Paint paint;
 			PAINTSTRUCT ps;
 			paint.area = BeginPaint(hWnd, &ps);
-			const int window_corner = 20;
-//			int margin;
 
 			//=====TRANSPARENCY=========
 			paint.x = 0;
@@ -78,7 +81,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.color = BACKGROUND_COLOR;
 
 			//====WINDOW BORDERS========
-			const COLORREF border_color = GetSysColor(COLOR_WINDOWFRAME);
 			paint.hWnd = hWnd;
 			paint.border.width = 1;
 			paint.border.style = PS_SOLID;
@@ -106,74 +108,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 			paint.Rectangle();
 
+			// Title Bar Buttons
+			Paint_Minimize(hWnd, hover_minimize);
+			Paint_Exit(hWnd, hover_exit);
 
-			//=====TITLE BUTTONS=======
-			const int button_width = 0.03 * WINDOW_WIDTH;	
-			const int button_height = TITLE_BAR;
 			
-			// MINIMIZE
-			const int icon_width = 1;
-			paint.Reset();
-			paint.x = WINDOW_WIDTH - button_width*2;
-			paint.y = 1;
-			paint.xend = paint.x + button_width;
-			paint.yend = button_height;
-			paint.color = RGB(49, 51, 56);
-		       	paint.Rectangle();	
-
-			paint.x = paint.x + 9;
-			paint.xend = paint.xend - 9;
-			paint.y = (int) button_height/2;
-			paint.yend = (int) button_height/2;
-			paint.border.color = ACCENT_0;
-			paint.border.width = icon_width;
-			paint.Line();
-
-			//EXIT
-			paint.Reset();
-			paint.border.width = 1;
-			paint.border.color = border_color;
-			paint.color = RGB(242, 63, 66);		
-			paint.y = 0;
-			paint.yend = button_height-1;
-			paint.x = WINDOW_WIDTH - button_width-1; // Perfect square
-			paint.xend = WINDOW_WIDTH;
-
-			paint.RoundRect(window_corner);
-
-			// Make left and bottom flat rectangle
-			paint.y = 1;
-			paint.yend = button_height;
-			paint.border.width = 0;
-			paint.xend = WINDOW_WIDTH - (button_width / 2);
-			paint.Rectangle();	
-
-			paint.xend = WINDOW_WIDTH;
-			paint.y = button_height / 2;
-			paint.Rectangle();
-
-			// X
-			// \*
-			const int x_cross = WINDOW_WIDTH - (button_width / 2) - 1;
-			const int y_cross = button_height/2;
-			paint.x = x_cross - 5;
-			paint.y = y_cross - 5;
-			paint.xend = x_cross + 6;
-			paint.yend = y_cross + 6;
-			paint.border.color = ACCENT_0;
-			paint.border.width = icon_width;
-
-			paint.Line();
-			
-			// */
-			paint.x = x_cross - 5;
-			paint.y = y_cross + 5;
-			paint.xend = x_cross + 6;
-			paint.yend = y_cross - 6;
-
-			paint.Line();
-
-			//=====TITLE TEXT========
+			//TITLE TEXT
 			paint.font.name = "Montserrat";
 			paint.font.size = 17;
 			paint.font.weight = 900;
@@ -183,7 +123,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 			paint.Text("SONAR");
 
-			// SONAR BACKGROUND
+			//=======SONAR BACKGROUND=======
 			paint.Reset();
 			paint.x = 70;
 			paint.y = TITLE_BAR-1;
@@ -237,10 +177,18 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			GetCursorPos(&mouse);
 			ScreenToClient(hWnd, &mouse);
 
+			const int minimize_x = WINDOW_WIDTH - button_width*2;
+			const int minimize_xend = WINDOW_WIDTH - button_width; 
+			const int exit_x = minimize_xend;
+			const int exit_xend = WINDOW_WIDTH;
+			
 			if (mouse.y >= 0 && mouse.y <= TITLE_BAR) {
-				if (mouse.x >= 0 && mouse.x <= WINDOW_WIDTH) {
+				if (mouse.x >= 0 && mouse.x <= WINDOW_WIDTH - button_width*2) {
 					SendMessage(hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
 				}
+
+				// Checks if title buttons clicked
+
 			}
 
 			break;
@@ -250,9 +198,43 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 		case WM_MOUSEMOVE: {
 			POINT mouse;
 			GetCursorPos(&mouse);
-			ScreenToClient(hWnd, &mouse);
+			int in_focus = ScreenToClient(hWnd, &mouse);
 
-			if (
+			// Checks if curser in title bar
+			const int minimize_x = WINDOW_WIDTH - button_width*2;
+			const int minimize_xend = WINDOW_WIDTH - button_width; 
+			const int exit_x = minimize_xend;
+			const int exit_xend = WINDOW_WIDTH;
+			
+			bool in_title = (mouse.y >= 0 && mouse.y <= TITLE_BAR) && 
+					(mouse.x >= 0 && mouse.x <= WINDOW_WIDTH);
+			if (in_title && in_focus > 0) {
+				// Determines which button is hovered over
+				if (mouse.x >= minimize_x && mouse.x < minimize_xend) {
+					// Minimize
+					SetCapture(hWnd);
+					hover_minimize = true;
+					hover_exit = false;
+					
+				} else if (mouse.x >= exit_x && mouse.x <= exit_xend) {
+					// Exit 
+					SetCapture(hWnd);
+					hover_minimize = false;
+					hover_exit = true;
+
+				} else {
+					ReleaseCapture();
+					hover_minimize = false;
+					hover_exit = false;
+				}
+			} else {
+					ReleaseCapture();
+					hover_minimize = false;
+					hover_exit = false;
+			}
+
+			Paint_Minimize(hWnd, hover_minimize);
+			Paint_Exit(hWnd, hover_exit);
 
 
 			break;

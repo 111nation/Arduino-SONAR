@@ -1,110 +1,99 @@
 #include "dashboard.h"
 
-Paint::~Paint() {
-	if (hbrush) {
-		DeleteObject(hbrush);
-		hbrush = NULL;
-	}
+void Paint_Minimize(HWND hWnd, bool bHover) {	
 
-	if (area) {
-		DeleteObject(area);
-		area = NULL;
-	}
+	COLORREF button_color;
 
-	if (hpen) {
-		DeleteObject(hpen);
-		hpen = NULL;
-	}
-
-}
-
-void Paint::Line() {
-	UpdateColor();
-
-	MoveToEx(area, x, y, NULL);
-	LineTo(area, xend, yend);
-}
-
-void Paint::RoundRect(int corner_radius) {
-	this->RoundRect(corner_radius, corner_radius);
-}
-
-void Paint::RoundRect(int cornerx, int cornery) {
-	UpdateColor();
-	
-	::RoundRect(area, x, y, xend, yend, cornerx, cornery);
-}
-
-void Paint::Rectangle() {
-	UpdateColor();
-
-	::Rectangle(area, x, y, xend, yend);
-}
-
-void Paint::Text(std::string text) {
-	UpdateColor();
-	
-	// Font properties
-	SetTextColor(area, color);
-	SetBkMode(area, TRANSPARENT);
-	// Updates area
-	SelectObject(area, font.Use());
-	
-	TextOutA(area, x, y, text.c_str(), text.length());
-}
-
-//====================
-// UTILITIES
-//====================
-void Paint::UpdateColor() {
-	DeleteObject(hbrush);
-	DeleteObject(hpen);
-
-	// Background color
-	hbrush = CreateSolidBrush(color);
-	SelectObject(area, hbrush); // Colours 
-	
-	// border color
-	if (border.width == 0) {
-		hpen = CreatePen(PS_NULL, 0, DEF_TRANSPARENT);
+	// Determines button color to use based on hovers state
+	if (bHover) {
+		button_color = RGB(49, 51, 56);
 	} else {
-		hpen = CreatePen(border.style, border.width, border.color);
+		button_color = 0;
 	}
-	SelectObject(area, hpen);
 
+	Paint paint; 
+	paint.area = GetDC(hWnd);
+		
+	// MINIMIZE
+	paint.Reset();
+	paint.x = WINDOW_WIDTH - button_width*2;
+	paint.y = 1;
+	paint.xend = paint.x + button_width;
+	paint.yend = button_height;
+	paint.color = button_color;
+      	paint.Rectangle();	
+
+	paint.x = paint.x + 9;
+	paint.xend = paint.xend - 9;
+	paint.y = (int) button_height/2;
+	paint.yend = (int) button_height/2;
+	paint.border.color = ACCENT_0;
+	paint.border.width = icon_width;
+	paint.Line();
+
+	ReleaseDC(hWnd, paint.area);
 }
 
-void Paint::RECTtoPos(RECT rect) {
-	x = rect.left;
-	y = rect.top;
-	xend = rect.right;
-	yend = rect.bottom;
-}
-
-void Paint::Reset() {
-	x = 0;
-	y = 0;
-	xend = 0;
-	yend = 0;
+void Paint_Exit(HWND hWnd, bool bHover) {
 	
-	border.width = 0;
-	border.style = PS_SOLID;
-	border.color = DEF_TRANSPARENT;
+	COLORREF button_color;
 
-	color = 0;
+	// Determines button color to use based on hovers state
+	if (bHover) {
+		button_color = RGB(242, 63, 66);
+	} else {
+		button_color = 0;
+	}
 
-	corner.x = 0;
-	corner.y = 0;
-	Transparency(DEF_TRANSPARENT, 0);
 
-	font.Reset();	
-}
+	Paint paint;
+	paint.area = GetDC(hWnd);
+	//EXIT
+	paint.Reset();
+	paint.border.width = 1;
+	paint.border.color = border_color;
 
-void Paint::Transparency(int color, BYTE alpha) {
-	SetLayeredWindowAttributes(hWnd, color, alpha, LWA_COLORKEY);
-}
+	paint.color = button_color;		
 
-void Paint::Transparency() {
-	Transparency(DEF_TRANSPARENT, 0);
+	paint.y = 0;
+	paint.yend = button_height-1;
+	paint.x = WINDOW_WIDTH - button_width-1; // Perfect square
+	paint.xend = WINDOW_WIDTH;
+
+	paint.RoundRect(window_corner);
+
+	// Make left and bottom flat rectangle
+	paint.y = 1;
+	paint.yend = button_height;
+	paint.border.width = 0;
+	paint.xend = WINDOW_WIDTH - (button_width / 2);
+	paint.Rectangle();	
+
+	paint.xend = WINDOW_WIDTH;
+	paint.y = button_height / 2;
+	paint.Rectangle();
+
+	// X
+	// \*
+	const int x_cross = WINDOW_WIDTH - (button_width / 2) - 1;
+	const int y_cross = button_height/2;
+	paint.x = x_cross - 5;
+	paint.y = y_cross - 5;
+	paint.xend = x_cross + 6;
+	paint.yend = y_cross + 6;
+	paint.border.color = ACCENT_0;
+	paint.border.width = icon_width;
+
+	paint.Line();
+	
+	// */
+	paint.x = x_cross - 5;
+	paint.y = y_cross + 5;
+	paint.xend = x_cross + 6;
+	paint.yend = y_cross - 6;
+
+	paint.Line();
+
+	ReleaseDC(hWnd, paint.area);
 }
 
