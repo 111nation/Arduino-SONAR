@@ -124,8 +124,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.Text("SONAR");
 
 			//=======SONAR BACKGROUND=======
+			const int sonar_bg_margin = 70;
 			paint.Reset();
-			paint.x = 70;
+			paint.x = sonar_bg_margin;
 			paint.y = TITLE_BAR-1;
 			paint.xend = WINDOW_WIDTH;
 			paint.yend = WINDOW_HEIGHT + TITLE_BAR;
@@ -143,7 +144,68 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.xend = WINDOW_WIDTH;
 			paint.Rectangle();
 
+			//=======SONAR MAP==============
+			// OUTER
+			const int display_width = 450;
+			const int display_height = 450;
+			paint.Reset();
+			paint.x = (int) (WINDOW_WIDTH - display_width)/2 + sonar_bg_margin;
+			paint.y = (int) (WINDOW_HEIGHT - display_height)/2 + TITLE_BAR;
+			paint.xend = (int) (WINDOW_WIDTH + display_width)/2 + sonar_bg_margin;
+			paint.yend = (int) (WINDOW_HEIGHT + display_height)/2 + TITLE_BAR;
+			paint.color = ACCENT_2;
 
+			paint.Circle();
+			// CREATES INNER CIRCLES
+			const int CIRCLES = 4;
+			paint.border.color = ACCENT_3;
+			
+			const int space_between_circles = 15; 
+			int circle_margin = 20 - space_between_circles;
+			paint.border.width = 0;	
+			for (int circle=0; circle < CIRCLES; circle++) {
+				circle_margin += space_between_circles;
+				
+				++paint.border.width;
+
+				paint.x += circle_margin;
+				paint.y += circle_margin;
+				paint.xend -= circle_margin;
+				paint.yend -= circle_margin;
+
+				paint.Circle();
+
+			}
+
+			//========SONAR DECORATIONS==========
+			// Loops create gradient effect
+			// LINES
+			paint.border.color = ACCENT_3;
+			paint.border.width = 0;
+			//  |
+			paint.x = (int) (WINDOW_WIDTH)/2 + sonar_bg_margin;
+			paint.y = (int) (WINDOW_HEIGHT - display_height)/2 + TITLE_BAR - space_between_circles;
+			paint.xend = paint.x;
+			for (int circle = 0; circle < CIRCLES*2; circle++) { // x2 to iterate both sides
+				if (circle >= CIRCLES) {	
+					--paint.border.width;	
+				} else {
+					++paint.border.width;	
+				}
+				
+				paint.y += space_between_circles;
+				paint.yend = paint.y + space_between_circles*4;
+				
+				paint.Line();
+			}
+			
+			// —
+			paint.x = (int) (WINDOW_WIDTH - display_width)/2 + sonar_bg_margin;
+			paint.y =  (int) (WINDOW_HEIGHT)/2 + TITLE_BAR;
+			paint.xend = (int) (WINDOW_WIDTH + display_width)/2 + sonar_bg_margin;
+			paint.yend = paint.y;
+			paint.Line();
+			
 			EndPaint(hWnd, &ps);
 			break;
 		}
@@ -177,22 +239,40 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			GetCursorPos(&mouse);
 			ScreenToClient(hWnd, &mouse);
 
-			const int minimize_x = WINDOW_WIDTH - button_width*2;
-			const int minimize_xend = WINDOW_WIDTH - button_width; 
-			const int exit_x = minimize_xend;
-			const int exit_xend = WINDOW_WIDTH;
-			
 			if (mouse.y >= 0 && mouse.y <= TITLE_BAR) {
 				if (mouse.x >= 0 && mouse.x <= WINDOW_WIDTH - button_width*2) {
 					SendMessage(hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
 				}
-
-				// Checks if title buttons clicked
-
+				
+				// Title buttons
+				if (hover_minimize) {
+					click_minimize = true;
+				} else if (hover_exit){
+					click_exit = true;
+				}
 			}
 
 			break;
 
+		}
+
+		case WM_LBUTTONUP: {
+		  	POINT mouse;
+			GetCursorPos(&mouse);
+			ScreenToClient(hWnd, &mouse);
+			
+			// Checks if user confirms click on title bar buttons
+			if (mouse.y >= 0 && mouse.y <= TITLE_BAR) {
+				if (hover_minimize) {
+					// Minimize
+					ShowWindow(hWnd, SW_MINIMIZE); 
+				} else if (hover_exit){
+					// Exit
+					SendMessage(hWnd, WM_DESTROY, 0, 0);
+				}
+			}
+			
+			break;
 		}
 
 		case WM_MOUSEMOVE: {
@@ -201,13 +281,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			int in_focus = ScreenToClient(hWnd, &mouse);
 
 			// Checks if curser in title bar
-			const int minimize_x = WINDOW_WIDTH - button_width*2;
-			const int minimize_xend = WINDOW_WIDTH - button_width; 
-			const int exit_x = minimize_xend;
-			const int exit_xend = WINDOW_WIDTH;
-			
 			bool in_title = (mouse.y >= 0 && mouse.y <= TITLE_BAR) && 
 					(mouse.x >= 0 && mouse.x <= WINDOW_WIDTH);
+
 			if (in_title && in_focus > 0) {
 				// Determines which button is hovered over
 				if (mouse.x >= minimize_x && mouse.x < minimize_xend) {
@@ -215,12 +291,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 					SetCapture(hWnd);
 					hover_minimize = true;
 					hover_exit = false;
+					Sleep(75);
 					
 				} else if (mouse.x >= exit_x && mouse.x <= exit_xend) {
 					// Exit 
 					SetCapture(hWnd);
 					hover_minimize = false;
 					hover_exit = true;
+					Sleep(75);
 
 				} else {
 					ReleaseCapture();

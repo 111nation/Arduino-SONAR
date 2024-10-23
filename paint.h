@@ -57,4 +57,8 @@ class Paint {
 	void Text(const std::string text);
 	void Transparency(int color, BYTE alpha); 
 	void Transparency();
+	// Circle functions
+	void Pie(int xrad1, int yrad1, int xrad2, int yrad2);
+	void Pie(int xrad1, int yrad1, int xrad2, int yrad2, bool counterclockwise);
+	void Circle();
 };

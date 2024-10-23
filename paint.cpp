@@ -53,6 +53,28 @@ void Paint::Text(std::string text) {
 	TextOutA(area, x, y, text.c_str(), text.length());
 }
 
+void Paint::Pie(int xrad1, int yrad1, int xrad2, int yrad2, bool counterclockwise) {
+	UpdateColor();
+	
+	if (counterclockwise == false) {
+		SetArcDirection(area, AD_CLOCKWISE); // Makes coordinates easier by setting arc direction
+	} else {
+		SetArcDirection(area, AD_COUNTERCLOCKWISE);
+	}
+
+	::Pie(area, x, y, xend, yend, xrad1, yrad1, xrad2, yrad2);
+}
+
+void Paint::Pie(int xrad1, int yrad1, int xrad2, int yrad2) {
+	Pie(xrad1, yrad1, xrad2, yrad2, false);
+}
+
+void Paint::Circle() {
+	UpdateColor();
+
+	::Ellipse(area, x, y, xend, yend);
+}
+
 //====================
 // UTILITIES
 //====================
@@ -107,4 +129,6 @@ void Paint::Transparency(int color, BYTE alpha) {
 void Paint::Transparency() {
 	Transparency(DEF_TRANSPARENT, 0);
 }
+
+
 
