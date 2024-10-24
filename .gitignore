@@ -1,3 +1,5 @@
 *.o
 *.bat
 *.exe
+*.swo
+*.swp
