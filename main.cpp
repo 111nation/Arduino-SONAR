@@ -1,4 +1,4 @@
-#include "dashboard.h"
+#include "display.h"
 
 bool hover_minimize = false;
 bool hover_exit = false;
@@ -124,7 +124,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.Text("SONAR");
 
 			//=======SONAR BACKGROUND=======
-			const int sonar_bg_margin = 70;
 			paint.Reset();
 			paint.x = sonar_bg_margin;
 			paint.y = TITLE_BAR-1;
@@ -145,67 +144,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.Rectangle();
 
 			//=======SONAR MAP==============
-			// OUTER
-			const int display_width = 450;
-			const int display_height = 450;
-			paint.Reset();
-			paint.x = (int) (WINDOW_WIDTH - display_width)/2 + sonar_bg_margin;
-			paint.y = (int) (WINDOW_HEIGHT - display_height)/2 + TITLE_BAR;
-			paint.xend = (int) (WINDOW_WIDTH + display_width)/2 + sonar_bg_margin;
-			paint.yend = (int) (WINDOW_HEIGHT + display_height)/2 + TITLE_BAR;
-			paint.color = ACCENT_2;
-
-			paint.Circle();
-			// CREATES INNER CIRCLES
-			const int CIRCLES = 4;
-			paint.border.color = ACCENT_3;
+			SonarDisplay(hWnd);
 			
-			const int space_between_circles = 15; 
-			int circle_margin = 20 - space_between_circles;
-			paint.border.width = 0;	
-			for (int circle=0; circle < CIRCLES; circle++) {
-				circle_margin += space_between_circles;
-				
-				++paint.border.width;
-
-				paint.x += circle_margin;
-				paint.y += circle_margin;
-				paint.xend -= circle_margin;
-				paint.yend -= circle_margin;
-
-				paint.Circle();
-
-			}
-
-			//========SONAR DECORATIONS==========
-			// Loops create gradient effect
-			// LINES
-			paint.border.color = ACCENT_3;
-			paint.border.width = 0;
-			//  |
-			paint.x = (int) (WINDOW_WIDTH)/2 + sonar_bg_margin;
-			paint.y = (int) (WINDOW_HEIGHT - display_height)/2 + TITLE_BAR - space_between_circles;
-			paint.xend = paint.x;
-			for (int circle = 0; circle < CIRCLES*2; circle++) { // x2 to iterate both sides
-				if (circle >= CIRCLES) {	
-					--paint.border.width;	
-				} else {
-					++paint.border.width;	
-				}
-				
-				paint.y += space_between_circles;
-				paint.yend = paint.y + space_between_circles*4;
-				
-				paint.Line();
-			}
-			
-			// —
-			paint.x = (int) (WINDOW_WIDTH - display_width)/2 + sonar_bg_margin;
-			paint.y =  (int) (WINDOW_HEIGHT)/2 + TITLE_BAR;
-			paint.xend = (int) (WINDOW_WIDTH + display_width)/2 + sonar_bg_margin;
-			paint.yend = paint.y;
-			paint.Line();
-			
+		
+		
 			EndPaint(hWnd, &ps);
 			break;
 		}

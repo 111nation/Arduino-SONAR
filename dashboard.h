@@ -9,8 +9,7 @@
 #include <sstream>
 
 // Libraries
-#include "FontLib/font.h"
-#include "paint.h"
+#include "PaintLib/paint.h"
 
 #define WINDOW_WIDTH 1000  
 #define TITLE_BAR 23
@@ -36,6 +35,8 @@ const int minimize_x = WINDOW_WIDTH - button_width*2;
 const int minimize_xend = WINDOW_WIDTH - button_width; 
 const int exit_x = minimize_xend;
 const int exit_xend = WINDOW_WIDTH;
+
+const int sonar_bg_margin = 70;
 
 
 //=====WINDOW DATA============

@@ -6,7 +6,7 @@
 #include <windows.h>
 
 // Libraries
-#include "FontLib/font.h"
+#include "font.h"
 
 #define DEF_TRANSPARENT RGB(254, 254, 254)
 
