@@ -13,12 +13,25 @@ using namespace display;
 void RadiiXY(int centerx, int centery, double deg,  int * x, int * y);
 
 void SonarDisplay(HWND hWnd, double deg) {
+	paint.ClearDC();
+	const COLORREF transparent_color = RGB(0,0,0);
+
 	// Double buffer painting
 	HDC hDC = GetDC(hWnd);
 	// Creates buffer
 	paint.area = CreateCompatibleDC(hDC);
 	HBITMAP hBitmap = CreateCompatibleBitmap(hDC, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR);
 	SelectObject(paint.area, hBitmap);
+	
+	// Manages transparency by creating transparent white background which acts as a 'white (green) screen'
+	paint.Reset();
+	paint.x = 0;
+	paint.y = 0;
+	paint.xend = WINDOW_WIDTH;
+	paint.yend = WINDOW_HEIGHT + TITLE_BAR;
+	paint.color = transparent_color;
+	
+	paint.Rectangle();
 
 	paint.Reset();
 
@@ -140,19 +153,11 @@ void SonarDisplay(HWND hWnd, double deg) {
 	Nav(deg);
 	
 	// Transfer buffer onto window
-	// Makes white transparent
-	BLENDFUNCTION transparency_settings = {
-		AC_SRC_OVER,
-		0,
-		255,
-		AC_SRC_ALPHA
-	};
-
-	AlphaBlend(paint.area, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR,
+	TransparentBlt(hDC, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR,
 			paint.area, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR,
-			transparency_settings); 
+			transparent_color); 
 
-	BitBlt(hDC, 0, TITLE_BAR, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR, paint.area, 0, TITLE_BAR, SRCCOPY); 
+	//BitBlt(hDC, 0, TITLE_BAR, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR, paint.area, 0, TITLE_BAR, SRCCOPY); 
 
 	DeleteObject(hBitmap);
 	DeleteDC(paint.area);

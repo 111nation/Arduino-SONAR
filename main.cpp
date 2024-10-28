@@ -255,14 +255,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 					SetCapture(hWnd);
 					hover_minimize = true;
 					hover_exit = false;
-					Sleep(75);
+					//Sleep(75);
 					
 				} else if (mouse.x >= exit_x && mouse.x <= exit_xend) {
 					// Exit 
 					SetCapture(hWnd);
 					hover_minimize = false;
 					hover_exit = true;
-					Sleep(75);
+					//Sleep(75);
 
 				} else {
 					ReleaseCapture();

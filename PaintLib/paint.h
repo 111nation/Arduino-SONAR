@@ -50,6 +50,7 @@ class Paint {
 	void Length();
 
 	~Paint();
+	void ClearDC();
 	void Reset();
 	void RECTtoPos(RECT rect);
 

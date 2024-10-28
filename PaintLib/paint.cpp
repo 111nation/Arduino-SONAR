@@ -7,7 +7,25 @@ Paint::~Paint() {
 	}
 
 	if (area) {
-		DeleteObject(area);
+		DeleteDC(area);
+		area = NULL;
+	}
+
+	if (hpen) {
+		DeleteObject(hpen);
+		hpen = NULL;
+	}
+
+}
+
+void Paint::ClearDC() {
+	if (hbrush) {
+		DeleteObject(hbrush);
+		hbrush = NULL;
+	}
+
+	if (area) {
+		DeleteDC(area);
 		area = NULL;
 	}
 
