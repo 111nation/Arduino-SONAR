@@ -18,6 +18,9 @@ class Paint {
 	void UpdateColor();
 	HBRUSH hbrush=NULL;
 	HPEN hpen=NULL;
+
+	// Keeps track how many submitted characters for Text
+	int characters = 0;
 	
 	public:
 	HDC area=NULL;
@@ -44,6 +47,7 @@ class Paint {
 	Border border;
 
 	Font font;
+	void Length();
 
 	~Paint();
 	void Reset();

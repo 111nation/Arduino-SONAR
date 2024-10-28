@@ -47,4 +47,3 @@ void Font::DefaultFont() {
                 		CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                 		0, font_name.c_str());// Default font
 }
-

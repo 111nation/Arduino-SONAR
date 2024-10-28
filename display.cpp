@@ -1,14 +1,26 @@
 #include "display.h"
+#include <math.h>
 
 namespace display {
-	Paint paint;
-	circle arrCircles [CIRCLES];	
-}
+		Paint paint;
+		circle arrCircles [CIRCLES];
+};
 
-using namespace display;
+#define PI 2 * acos(0.0)
 
-void SonarDisplay(HWND hWnd) {
-	paint.area = GetDC(hWnd);
+using namespace display; 
+
+void RadiiXY(int centerx, int centery, double deg,  int * x, int * y);
+
+void SonarDisplay(HWND hWnd, double deg) {
+	// Double buffer painting
+	HDC hDC = GetDC(hWnd);
+	// Creates buffer
+	paint.area = CreateCompatibleDC(hDC);
+	HBITMAP hBitmap = CreateCompatibleBitmap(hDC, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR);
+	SelectObject(paint.area, hBitmap);
+
+	paint.Reset();
 
 	// Stores how many circles to create and their corresponding data
 	circle arrCircles [CIRCLES] = {0};
@@ -122,11 +134,102 @@ void SonarDisplay(HWND hWnd) {
 	paint.x = arrCircles[0].xend + PADDING + 5;
 	paint.xend = paint.x - line_length;
 	paint.Line();
+		
 	
-
+	DegreesText();
+	Nav(deg);
 	
+	// Transfer buffer onto window
+	// Makes white transparent
+	BLENDFUNCTION transparency_settings = {
+		AC_SRC_OVER,
+		0,
+		255,
+		AC_SRC_ALPHA
+	};
 
-	ReleaseDC(hWnd, paint.area);
+	AlphaBlend(paint.area, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR,
+			paint.area, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR,
+			transparency_settings); 
+
+	BitBlt(hDC, 0, TITLE_BAR, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR, paint.area, 0, TITLE_BAR, SRCCOPY); 
+
+	DeleteObject(hBitmap);
+	DeleteDC(paint.area);
+	ReleaseDC(hWnd, hDC);
 }
+
+void DegreesText() {
+	// Text styling
+	paint.Reset();
+	paint.font.size = 20;
+	paint.color = ACCENT_3;
+	paint.font.name = "Montserrat";
+	paint.font.weight = 500;
+	//paint.font.italics = TRUE;
+	
+	// Text display
+	int CHAR_WIDTH = 4;
+
+	// MAIN 0; 90; 180; 270; 360
+	std::string text = "0";
+	paint.x = (int) (SONAR_DISPLAY.x + SONAR_DISPLAY.xend)/2 - (CHAR_WIDTH * text.length());
+	paint.y = (int) SONAR_DISPLAY.y - TEXT_MARGIN;
+	paint.Text(text);
+
+	text = "180";
+	paint.x = (int) (SONAR_DISPLAY.x + SONAR_DISPLAY.xend)/2 - (CHAR_WIDTH * text.length());
+	paint.y = (int) SONAR_DISPLAY.yend;
+	paint.Text(text);
+
+	text = "270";
+	paint.x = (int) (SONAR_DISPLAY.x - TEXT_MARGIN) - (CHAR_WIDTH * text.length());
+	paint.y = (int) (SONAR_DISPLAY.y + SONAR_DISPLAY.yend - TITLE_BAR) / 2;
+	paint.Text(text);
+
+	text = "90";
+	paint.x = (int) (SONAR_DISPLAY.xend) + (CHAR_WIDTH * text.length());
+	paint.Text(text);
+}
+
+void Nav(double deg) {
+	paint.Reset();
+	
+	struct Nav { 
+		int x = 0;
+		int y = 0;
+		int xend = 0;
+		int yend = 0;
+	};
+
+	paint.border.color = ACCENT_3;
+	paint.border.width = 4;
+	
+	const Nav NAV {
+		SONAR_DISPLAY.x,
+		SONAR_DISPLAY.y,
+		(int) ((SONAR_DISPLAY.x + SONAR_DISPLAY.xend) / 2) - 1 ,
+		(int) ((SONAR_DISPLAY.y + SONAR_DISPLAY.yend) / 2) - 1
+	};
+	
+	paint.xend = NAV.xend;
+	paint.yend = NAV.yend;
+
+	// Calculates start & end pos
+	RadiiXY(paint.xend, paint.yend, deg, &paint.x, &paint.y);
+
+	paint.Line();	
+
+}
+
+void RadiiXY(int centerx, int centery, double deg,  int * x, int * y) {
+	// Recieve degrees in degrees, convert to radiants
+	const double RAD = (deg-90) * (PI / 180.0);		
+	
+	// Gets x,y value which lies on the circumference	
+	*x = centerx + (int) ((RADII-RADII_MARGIN) * cos(RAD));
+	*y = centery + (int) ((RADII-RADII_MARGIN) * sin(RAD));
+}
+
 
 

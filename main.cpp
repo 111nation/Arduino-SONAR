@@ -7,6 +7,15 @@ int click_exit = false;
 
 const std::wstring MAIN_CLASS = L"MAIN_CLASS";
 
+#define FPS 1
+#define DISPLAY_TIMER 1
+
+namespace sonar {
+	double deg = -45;
+	bool clockwise = true;
+	const int INTERVAL = 1;
+}	
+
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam);
 
 int WINAPI WinMain(HINSTANCE hApp, HINSTANCE hPrev, PSTR arg, int window_mode) {
@@ -33,6 +42,9 @@ int WINAPI WinMain(HINSTANCE hApp, HINSTANCE hPrev, PSTR arg, int window_mode) {
 		return 0;
 	}
 
+	// Timer used to remind application to update display
+	SetTimer(hDashboard, DISPLAY_TIMER, FPS, NULL);
+
 	// Set Transparency of window
 	//SetLayeredWindowAttributes(hDashboard, DEF_TRANSPARENT, 0, LWA_COLORKEY);
 	ShowWindow(hDashboard, window_mode);  
@@ -46,6 +58,8 @@ int WINAPI WinMain(HINSTANCE hApp, HINSTANCE hPrev, PSTR arg, int window_mode) {
 		DispatchMessage(&event);
 	}	
 
+	KillTimer(hDashboard, DISPLAY_TIMER);
+
 	return 0;		
 }
 
@@ -56,6 +70,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			Paint paint;
 			paint.hWnd = hWnd;
 			paint.Transparency();
+
+			//SonarDisplay(hWnd, sonar::deg);
+			
+			break;
+		}
+
+		case WM_ERASEBKGND: {
+			return TRUE;
 			break;
 		}
 
@@ -144,7 +166,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.Rectangle();
 
 			//=======SONAR MAP==============
-			SonarDisplay(hWnd);
+			//SonarDisplay(hWnd, -45);
 			
 		
 		
@@ -257,6 +279,42 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			Paint_Exit(hWnd, hover_exit);
 
 
+			break;
+		}
+
+		//==========================
+		// REGULAR INTERVALS
+		//==========================
+		case WM_TIMER: {
+			
+			switch (wParam) {
+
+				// DISPLAY TIMER
+				case DISPLAY_TIMER: {
+					// Updates degrees
+					// Checks for direction change
+					const int OFFSET = (90 % sonar::INTERVAL);
+					const bool IN_RANGE = sonar::deg <= -90 - OFFSET  
+						|| sonar::deg >= 90 + OFFSET;
+					if (IN_RANGE) {
+						sonar::clockwise = !sonar::clockwise;
+					}
+
+					if (sonar::clockwise) {
+						sonar::deg += sonar::INTERVAL;
+					} else {
+						sonar::deg -= sonar::INTERVAL;
+					}
+
+					SonarDisplay(hWnd, sonar::deg);
+
+					return 0;
+					break;
+				}
+
+			}
+
+			
 			break;
 		}
 	}

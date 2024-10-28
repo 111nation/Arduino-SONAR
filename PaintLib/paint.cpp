@@ -50,6 +50,8 @@ void Paint::Text(std::string text) {
 	// Updates area
 	SelectObject(area, font.Use());
 	
+	characters = text.length();
+
 	TextOutA(area, x, y, text.c_str(), text.length());
 }
 
