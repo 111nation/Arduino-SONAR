@@ -250,3 +250,51 @@ void Paint_SonarDisplay(HWND hWnd) {
 
 	ReleaseDC(hWnd, paint.area);
 }
+
+void Paint_Status(HWND hWnd, int status) {
+	using namespace STATUS;
+	COLORREF color = 0;
+	// Gets color to use
+	switch (status) {
+		case DISCONNECTED:
+			color = RGB(242, 63, 66);
+			break;
+		case OK: 
+			color = RGB(49, 51, 56);
+			break;
+		case WARNING:
+		default:
+			color = RGB(240, 178, 50);
+			break;		
+	}	
+	
+
+	//======STATUS DRAWING==========
+	Paint paint;
+	paint.area = GetDC(hWnd);	
+
+	paint.Reset();
+	std::string text = "STATUS";
+	int text_width = 7 * text.length();
+	paint.x = (int) (sonar_bg_margin)/2 - text_width;
+	paint.y = TITLE_BAR + 15;
+	paint.color = RGB(213, 214, 220);
+	paint.font.size = 25;
+	paint.font.weight = 900;
+	paint.Text(text);
+
+	// STATUS BAR
+	paint.Reset();
+	const int STATUS_WIDTH = (int) sonar_bg_margin/2;
+	const int STATUS_HEIGHT = 20;
+
+	paint.x = (int) (sonar_bg_margin - STATUS_WIDTH)/2; 
+	paint.y = TITLE_BAR + 50;
+	paint.xend = (int) (sonar_bg_margin + STATUS_WIDTH)/2;
+	paint.yend = paint.y + STATUS_HEIGHT;
+	paint.color = color;
+
+	paint.RoundRect(10);	
+
+	ReleaseDC(hWnd, paint.area);
+}

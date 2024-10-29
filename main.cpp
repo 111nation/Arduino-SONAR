@@ -165,11 +165,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.xend = WINDOW_WIDTH;
 			paint.Rectangle();
 
-			//=======SONAR MAP==============
-			//SonarDisplay(hWnd, -45);
+
+			//========STATUS===========
+			Paint_Status(hWnd, STATUS::OK);
+		
 			
-		
-		
+			
+			
 			EndPaint(hWnd, &ps);
 			break;
 		}

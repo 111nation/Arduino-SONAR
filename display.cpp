@@ -207,9 +207,6 @@ void Nav(double deg) {
 		int yend = 0;
 	};
 
-	paint.border.color = ACCENT_3;
-	paint.border.width = 4;
-	
 	const Nav NAV {
 		SONAR_DISPLAY.x,
 		SONAR_DISPLAY.y,
@@ -217,6 +214,30 @@ void Nav(double deg) {
 		(int) ((SONAR_DISPLAY.y + SONAR_DISPLAY.yend) / 2) - 1
 	};
 	
+	//===NAVIGATION ARC===
+	paint.Reset();
+	paint.color = arrColors[CIRCLES-1];
+	paint.x = NAV.x+1;
+	paint.y = NAV.y+1;
+	paint.xend = SONAR_DISPLAY.xend-1;
+	paint.yend = SONAR_DISPLAY.yend-1;
+	
+	int xrad1 = NAV.x + 1;
+	int yrad1 = NAV.yend - 1;
+	int xrad2 = 0;
+	int yrad2 = 0;
+	
+	// Figures out starting radial
+	RadiiXY(NAV.xend, NAV.yend, deg-20, &xrad1, &yrad1);
+	// Figures out ending radial
+	RadiiXY(NAV.xend, NAV.yend, deg, &xrad2, &yrad2);
+		
+
+	paint.Pie(xrad1, yrad1, xrad2, yrad2, false);
+	
+	//====NAVIGATION PIN====
+	paint.border.color = arrColors[CIRCLES];
+	paint.border.width = 4;
 	paint.xend = NAV.xend;
 	paint.yend = NAV.yend;
 
@@ -224,7 +245,6 @@ void Nav(double deg) {
 	RadiiXY(paint.xend, paint.yend, deg, &paint.x, &paint.y);
 
 	paint.Line();	
-
 }
 
 void RadiiXY(int centerx, int centery, double deg,  int * x, int * y) {

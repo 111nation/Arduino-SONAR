@@ -113,7 +113,6 @@ void Paint::UpdateColor() {
 		hpen = CreatePen(border.style, border.width, border.color);
 	}
 	SelectObject(area, hpen);
-
 }
 
 void Paint::RECTtoPos(RECT rect) {

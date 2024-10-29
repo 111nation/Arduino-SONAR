@@ -36,7 +36,7 @@ const int minimize_xend = WINDOW_WIDTH - button_width;
 const int exit_x = minimize_xend;
 const int exit_xend = WINDOW_WIDTH;
 
-const int sonar_bg_margin = 70;
+const int sonar_bg_margin = 100;
 
 
 //=====WINDOW DATA============
@@ -45,3 +45,11 @@ const int window_corner = 20;
 
 void Paint_Minimize(HWND hWnd, bool bHover);
 void Paint_Exit(HWND hWnd, bool bHover);
+
+//=====STATUS DATA============
+namespace STATUS {
+	const int DISCONNECTED = 1;
+	const int WARNING = 2;
+	const int OK = 3;
+}
+void Paint_Status(HWND hWnd, int status);
