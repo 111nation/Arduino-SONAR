@@ -297,14 +297,19 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 					if (SONAR.status != STATUS::OK) {
 						SONAR.Init();
 						Paint_Status(hWnd, SONAR.status);			
-						SonarDisplay(hWnd, 270);
+						SonarDisplay(hWnd, -90);
 						break;
 					}
 
 					// UPDATES COORDINATES OF ARDUINO
+					if (SONAR.Update()) break;
+
+					if (SONAR.PostConfirm()) break;
+
+					// MOVES THE SONAR DISPLAY TO AREA
+					SonarDisplay(hWnd, SONAR.deg);					
 					
-					
-					// UPDATING SONAR DISPLAY
+					/*// UPDATING SONAR DISPLAY
 					// Updates degrees
 					// Checks for direction change
 					const int OFFSET = (90 % sonar::INTERVAL);
@@ -322,7 +327,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 					
 					SonarDisplay(hWnd, sonar::deg);
 	
-					return 0;
+					return 0;*/
 
 					break;
 				}
@@ -337,7 +342,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 }
 
 // SONAR CLASS
-void SONAR::Init() {
+bool SONAR::Init() {
 	delete ARDUINO;
 
 	try {
@@ -354,8 +359,51 @@ void SONAR::Init() {
 				break;
 		}
 
-		delete ARDUINO; 	
+		delete ARDUINO; 
+
+		return true;	
 	}
+
+	return false;
+}
+
+bool SONAR::Update() {
+	try {
+		std::string data = ARDUINO->Read(BYTES);
+		// Attempts to convert message
+		if (ConvertMessage(data) != 0) {
+			status = STATUS::WARNING;
+			
+			// Let Arduino know to halt due to error
+			PostError();
+			return true;
+		}
+	} catch (int err) {
+		GetErr(err);
+		return true;
+	}
+
+	return false;
+}
+
+bool SONAR::PostError() {
+	try {
+		ARDUINO->Write("!E\n");
+	} catch (int err) {
+		GetErr(err);	
+		return true;
+	}
+	return false;
+}
+
+bool SONAR::PostConfirm() {
+	try {
+		ARDUINO->Write("!C\n");
+	} catch (int err) {
+		GetErr(err);	
+		return true;
+	}
+	return false;
 }
 
 SONAR::~SONAR () {
@@ -364,3 +412,39 @@ SONAR::~SONAR () {
 	}
 }
 
+//====================
+// UTILITIES
+//====================
+int SONAR::ConvertMessage(std::string msg) {
+	const int old_deg = deg;
+
+	std::string sDeg = msg;
+	//std::string proximity;
+	
+	try {
+		deg = std::stoi(sDeg);
+		deg -= 90; // Match the display output degree system
+	// Reroll to previous versions if failed
+	} catch (std::invalid_argument const& err) {
+		deg = old_deg;
+		return 1;
+	} catch (std::out_of_range const& err) {
+		deg = old_deg;
+		return 1;
+	}
+
+	return 0;
+	
+}
+
+void SONAR::GetErr(int err) {
+	// Converts errors into status codes
+	switch (err) {
+		case Error::DISCONNECTED:
+			status = STATUS::DISCONNECTED;
+			break;
+		default:
+			status = STATUS::WARNING;
+			break;
+	}
+}

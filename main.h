@@ -9,16 +9,25 @@ class SONAR {
 	int status = STATUS::DISCONNECTED;
 	int rate = 9600;
 	int hello = 0;
+	int deg = -90;
+
 
 	std::string com;
 	
 	~SONAR();
 
-	void Init();
+	bool Init();
+	bool Update();
+	bool PostError();
+	bool PostConfirm();
 
 	private:
+	const int BYTES = 8;
 	SerialPort *ARDUINO = NULL;
 	const int byte_size = 8; 
+	
+	int ConvertMessage(std::string msg);
+	void GetErr(int err);
 };
 
 SONAR SONAR;
