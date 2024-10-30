@@ -1,14 +1,17 @@
 #pragma once
 
+#include "display.h"
 #include "SerialPortLib/SerialPort.h"
 
+//=======================SONAR HANDLING===================
 class SONAR {
 	public:
-	int status = 0;
+	int status = STATUS::DISCONNECTED;
 	int rate = 9600;
+	int hello = 0;
 
 	std::string com;
-
+	
 	~SONAR();
 
 	void Init();
@@ -17,3 +20,6 @@ class SONAR {
 	SerialPort *ARDUINO = NULL;
 	const int byte_size = 8; 
 };
+
+SONAR SONAR;
+

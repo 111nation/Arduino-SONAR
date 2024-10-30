@@ -1,4 +1,4 @@
-#include "display.h"
+#include "main.h"
 
 bool hover_minimize = false;
 bool hover_exit = false;
@@ -8,7 +8,7 @@ int click_exit = false;
 const std::wstring MAIN_CLASS = L"MAIN_CLASS";
 
 #define FPS 1
-#define DISPLAY_TIMER 1
+#define APPLICATION_TIMER 1
 
 namespace sonar {
 	double deg = -45;
@@ -19,7 +19,6 @@ namespace sonar {
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam);
 
 int WINAPI WinMain(HINSTANCE hApp, HINSTANCE hPrev, PSTR arg, int window_mode) {
-	
 	WNDCLASS wc = {};
 	wc.lpfnWndProc = WindowProc;
 	wc.hInstance = hApp;
@@ -43,12 +42,13 @@ int WINAPI WinMain(HINSTANCE hApp, HINSTANCE hPrev, PSTR arg, int window_mode) {
 	}
 
 	// Timer used to remind application to update display
-	SetTimer(hDashboard, DISPLAY_TIMER, FPS, NULL);
+	// Timer used to connect to the arduino board
+	SetTimer(hDashboard, APPLICATION_TIMER, FPS, NULL);
 
 	// Set Transparency of window
 	//SetLayeredWindowAttributes(hDashboard, DEF_TRANSPARENT, 0, LWA_COLORKEY);
 	ShowWindow(hDashboard, window_mode);  
-	
+
 	//===============================================
 	// 	MESSAGE LOOP
 	//===============================================
@@ -58,7 +58,7 @@ int WINAPI WinMain(HINSTANCE hApp, HINSTANCE hPrev, PSTR arg, int window_mode) {
 		DispatchMessage(&event);
 	}	
 
-	KillTimer(hDashboard, DISPLAY_TIMER);
+	KillTimer(hDashboard, APPLICATION_TIMER);
 
 	return 0;		
 }
@@ -71,8 +71,10 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.hWnd = hWnd;
 			paint.Transparency();
 
-			//SonarDisplay(hWnd, sonar::deg);
-			
+			SONAR.com = "COM3";
+					
+			SONAR.Init();
+
 			break;
 		}
 
@@ -167,9 +169,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 
 			//========STATUS===========
-			Paint_Status(hWnd, STATUS::OK);
-		
-			
+			// Initialize SONAR display
+			SONAR.Init();
+			Paint_Status(hWnd, SONAR.status);			
 			
 			
 			EndPaint(hWnd, &ps);
@@ -257,14 +259,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 					SetCapture(hWnd);
 					hover_minimize = true;
 					hover_exit = false;
-					//Sleep(75);
 					
 				} else if (mouse.x >= exit_x && mouse.x <= exit_xend) {
 					// Exit 
 					SetCapture(hWnd);
 					hover_minimize = false;
 					hover_exit = true;
-					//Sleep(75);
 
 				} else {
 					ReleaseCapture();
@@ -292,7 +292,19 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			switch (wParam) {
 
 				// DISPLAY TIMER
-				case DISPLAY_TIMER: {
+				case APPLICATION_TIMER: {
+					// CONNECTS TO ARDUINO
+					if (SONAR.status != STATUS::OK) {
+						SONAR.Init();
+						Paint_Status(hWnd, SONAR.status);			
+						SonarDisplay(hWnd, 270);
+						break;
+					}
+
+					// UPDATES COORDINATES OF ARDUINO
+					
+					
+					// UPDATING SONAR DISPLAY
 					// Updates degrees
 					// Checks for direction change
 					const int OFFSET = (90 % sonar::INTERVAL);
@@ -307,10 +319,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 					} else {
 						sonar::deg -= sonar::INTERVAL;
 					}
-
+					
 					SonarDisplay(hWnd, sonar::deg);
-
+	
 					return 0;
+
 					break;
 				}
 
@@ -321,5 +334,33 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	return DefWindowProc(hWnd, event, wParam, lParam);
+}
+
+// SONAR CLASS
+void SONAR::Init() {
+	delete ARDUINO;
+
+	try {
+		ARDUINO = new SerialPort(com);
+		status = STATUS::OK;
+	} catch (int err) {
+		// Converts errors into status codes
+		switch (err) {
+			case Error::DISCONNECTED:
+				status = STATUS::DISCONNECTED;
+				break;
+			default:
+				status = STATUS::WARNING;
+				break;
+		}
+
+		delete ARDUINO; 	
+	}
+}
+
+SONAR::~SONAR () {
+	if (ARDUINO != NULL) {
+		delete ARDUINO;
+	}
 }
 

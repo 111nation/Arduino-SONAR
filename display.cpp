@@ -256,5 +256,48 @@ void RadiiXY(int centerx, int centery, double deg,  int * x, int * y) {
 	*y = centery + (int) ((RADII-RADII_MARGIN) * sin(RAD));
 }
 
+/*//=======================SONAR HANDLING===================
+class SONAR {
+	public:
+	int status = 0;
+	int rate = 9600;
 
+	std::string com;
+	
+	SONAR();
+	~SONAR();
+
+	void Init();
+
+	private:
+	SerialPort *ARDUINO = NULL;
+	const int byte_size = 8; 
+};
+
+using namespace Error;
+
+void SONAR::Init() {
+	if (ARDUINO != NULL) {
+		delete ARDUINO;
+	}
+
+	try {
+		ARDUINO = new SerialPort(com);
+	} catch (int err) {
+		delete ARDUINO; 	
+		status = err;
+		
+		if (err == DISCONNECTED) {
+			MessageBox(NULL, L"Disconnected", L"ERROR", MB_ICONERROR);
+		}
+	}
+
+	status = 0;
+}
+
+SONAR::~SONAR () {
+	if (ARDUINO != NULL) {
+		delete ARDUINO;
+	}
+}*/
 

@@ -50,3 +50,4 @@ namespace display {
 void SonarDisplay(HWND hWnd, double deg);
 void DegreesText();
 void Nav(double deg);
+

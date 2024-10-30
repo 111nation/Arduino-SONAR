@@ -10,7 +10,6 @@
 
 // Libraries
 #include "PaintLib/paint.h"
-#include "sonar.h"
 
 #define WINDOW_WIDTH 1000  
 #define TITLE_BAR 23
@@ -25,9 +24,6 @@
 #define ACCENT_1 0xE6E6E9
 #define ACCENT_2 RGB(4, 6, 8) // Darkest
 #define ACCENT_3 RGB(88, 101, 242)
-
-//=====SONAR DETAILS============
-SONAR SONAR;
 
 //=====TITLE BUTTONS DATA=======
 const int button_width = 0.03 * WINDOW_WIDTH;	
@@ -57,3 +53,4 @@ namespace STATUS {
 	const int OK = 3;
 }
 void Paint_Status(HWND hWnd, int status);
+
