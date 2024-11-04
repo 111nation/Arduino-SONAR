@@ -34,6 +34,7 @@ class SerialPort {
 	// IO Operations
 	void Write(std::string msg);
 	std::string Read(int bytes_to_read);
+	int size();
 };
 
 // ==========================================================
@@ -45,7 +46,7 @@ SerialPort::SerialPort(std::string sPort) {
 	// Opens Port for read/ writing
 
 	hComPort = CreateFileA(sPort.c_str(), READ | WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	
+
 	// Potential Errors when opening Port
 	if (hComPort == INVALID_HANDLE_VALUE){
 		if (GetLastError() == ERROR_FILE_NOT_FOUND) {
@@ -54,6 +55,19 @@ SerialPort::SerialPort(std::string sPort) {
 			throw ACCESS_DENIED;
 		}
 	}
+
+	// Set timeouts to prevent indefinite blocking
+	COMMTIMEOUTS timeouts = { 0 };
+	timeouts.ReadIntervalTimeout = 1;          
+	timeouts.ReadTotalTimeoutConstant = 10;     
+	timeouts.ReadTotalTimeoutMultiplier = 1;
+	timeouts.WriteTotalTimeoutConstant = 10;    
+	timeouts.WriteTotalTimeoutMultiplier = 1;
+
+	if (!SetCommTimeouts(hComPort, &timeouts)) {
+		CloseHandle(hComPort);
+		throw ACCESS_DENIED; // Handle failed timeout setting
+	}	
 
 }
 
@@ -112,6 +126,18 @@ std::string SerialPort::Read(int bytes_to_read) {
 
 }
 
+int SerialPort::size() {
+	
+	COMSTAT comStat = {0};
+	DWORD errors;
+
+	if (ClearCommError(hComPort, &errors, &comStat)) {
+		return comStat.cbInQue + comStat.cbOutQue;
+	} else {
+		return 1000;
+	}
+}
+
 SerialPort::~SerialPort() { 
 	using namespace Error;
 	
@@ -120,7 +146,6 @@ SerialPort::~SerialPort() {
 		CloseHandle(hComPort);
 	}
 }
-
 
 
 

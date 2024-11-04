@@ -72,8 +72,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.Transparency();
 
 			SONAR.com = "COM3";
-					
-			SONAR.Init();
 
 			break;
 		}
@@ -170,7 +168,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 			//========STATUS===========
 			// Initialize SONAR display
-			SONAR.Init();
 			Paint_Status(hWnd, SONAR.status);			
 			
 			
@@ -303,31 +300,13 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 					// UPDATES COORDINATES OF ARDUINO
 					if (SONAR.Update()) break;
-
+					
 					if (SONAR.PostConfirm()) break;
 
 					// MOVES THE SONAR DISPLAY TO AREA
 					SonarDisplay(hWnd, SONAR.deg);					
 					
-					/*// UPDATING SONAR DISPLAY
-					// Updates degrees
-					// Checks for direction change
-					const int OFFSET = (90 % sonar::INTERVAL);
-					const bool IN_RANGE = sonar::deg <= -90 - OFFSET  
-						|| sonar::deg >= 90 + OFFSET;
-					if (IN_RANGE) {
-						sonar::clockwise = !sonar::clockwise;
-					}
-
-					if (sonar::clockwise) {
-						sonar::deg += sonar::INTERVAL;
-					} else {
-						sonar::deg -= sonar::INTERVAL;
-					}
-					
-					SonarDisplay(hWnd, sonar::deg);
-	
-					return 0;*/
+					return 0;
 
 					break;
 				}
@@ -343,7 +322,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 // SONAR CLASS
 bool SONAR::Init() {
-	delete ARDUINO;
+	if (ARDUINO) {
+		delete ARDUINO;
+	}
 
 	try {
 		ARDUINO = new SerialPort(com);
@@ -373,32 +354,39 @@ bool SONAR::Update() {
 		// Attempts to convert message
 		if (ConvertMessage(data) != 0) {
 			status = STATUS::WARNING;
-			
+		
 			// Let Arduino know to halt due to error
 			PostError();
 			return true;
+		} else {
+			//MessageBoxA(NULL, std::to_string(deg).c_str(), "DEG", MB_OK);
 		}
 	} catch (int err) {
+		PostError();
 		GetErr(err);
 		return true;
 	}
+	
+	PostConfirm();
 
 	return false;
 }
 
 bool SONAR::PostError() {
-	try {
-		ARDUINO->Write("!E\n");
-	} catch (int err) {
-		GetErr(err);	
-		return true;
-	}
-	return false;
+	return SendMsg("ERR");
 }
 
 bool SONAR::PostConfirm() {
+	MessageBoxA(NULL, std::to_string(ARDUINO->size()).c_str(), "SIZE", MB_OK);
+	return SendMsg("OK");
+}
+
+bool SONAR::SendMsg(std::string msg) {
 	try {
-		ARDUINO->Write("!C\n");
+		std::stringstream ss;
+		ss << cMSG << msg << cEND;
+		//MessageBoxA(NULL, ss.str().c_str(), "DEG", MB_OK);
+		ARDUINO->Write(ss.str());
 	} catch (int err) {
 		GetErr(err);	
 		return true;
@@ -417,19 +405,61 @@ SONAR::~SONAR () {
 //====================
 int SONAR::ConvertMessage(std::string msg) {
 	const int old_deg = deg;
+	const int old_prox = proximity;
 
-	std::string sDeg = msg;
-	//std::string proximity;
+	std::string sDeg = "";
+	std::string sProx = "";
+
+	// Breaks string into Degree and Proximity sections
+	bool parse = false;
+	bool parsedDeg = false;
+	bool end = false;
+
+	for (unsigned int i=0; i < msg.length(); i++) {
+		// If detects special character
+		// tells program what to do
+		switch (msg[i]) {
+			case cBEGIN:
+				parse = true;
+				continue;
+			case cDELIM:
+				if (parse && !end) {
+					parsedDeg = true;
+				}
+				continue;
+			case cEND:
+				if (parse && parsedDeg) {
+					end = true;
+				}
+				break;
+		}
+
+		// Extracts information
+		if (parse && !end) {
+			if (parsedDeg == false) {
+				// PARSING DEGREE
+				sDeg += msg[i];
+			} else {
+				sProx += msg[i];
+			}
+		}
+	}
 	
 	try {
+		if (parse == false || sDeg == "" || sProx == "" || end == false) {
+			throw "Data recieved was incomplete";	
+		}
+			
+		// NOTE: please add another buffer variable logic to store incomplete messages there so that
+		// 	i can wait for next piece of buffer and recontinue reading so that program is optimized
+
 		deg = std::stoi(sDeg);
 		deg -= 90; // Match the display output degree system
+		proximity = std::stoi(sProx);
 	// Reroll to previous versions if failed
-	} catch (std::invalid_argument const& err) {
+	} catch (...) {
 		deg = old_deg;
-		return 1;
-	} catch (std::out_of_range const& err) {
-		deg = old_deg;
+		proximity = old_prox;
 		return 1;
 	}
 
