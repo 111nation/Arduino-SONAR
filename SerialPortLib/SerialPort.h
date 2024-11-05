@@ -18,6 +18,7 @@ namespace Error {
 	const int ACCESS_DENIED = 2;
 	const int CONFIG_ERR = 3;
 	const int COMM_ERR = 4;
+	const int UNINITIALIZED = 5;
 }
 
 class SerialPort { 
@@ -25,6 +26,8 @@ class SerialPort {
 	HANDLE hComPort;
 	DCB dcbSettings = {0};
 	void CheckOverflow();
+	bool init=false; // Checks if the serial port initialized
+			 // Prevents accessing port if not initialized
 
 	public:
 	SerialPort(std::string sPort);
@@ -50,11 +53,15 @@ SerialPort::SerialPort(std::string sPort) {
 	// Potential Errors when opening Port
 	if (hComPort == INVALID_HANDLE_VALUE){
 		if (GetLastError() == ERROR_FILE_NOT_FOUND) {
+			init = false;
 			throw DISCONNECTED;
 		} else {
+			init = false;
 			throw ACCESS_DENIED;
 		}
 	}
+	
+	init = true;
 
 	// Set timeouts to prevent indefinite blocking
 	/*COMMTIMEOUTS timeouts = { 0 };
@@ -75,6 +82,8 @@ SerialPort::SerialPort(std::string sPort) {
 // GENERAL SETTINGS
 void SerialPort::Settings(int Baud_Rate, int Bytes) {
 	using namespace Error;
+	if (!init) throw UNINITIALIZED ;
+
 	dcbSettings = {0};
 	dcbSettings.DCBlength = sizeof(dcbSettings);
 		
@@ -97,6 +106,7 @@ void SerialPort::Settings(int Baud_Rate, int Bytes) {
 
 void SerialPort::Write(std::string msg) {
 	using namespace Error;
+	if (!init) throw UNINITIALIZED ;
 	
 	CheckOverflow();
 
@@ -112,8 +122,16 @@ void SerialPort::Write(std::string msg) {
 }
 
 std::string SerialPort::Read(int bytes_to_read) {
+
+	if (init != true) {
+ 		MessageBoxA(NULL, "TRUE", "TRUE", MB_OK);	
+	} else {
+ 		MessageBoxA(NULL, "FALSE", "FALSE", MB_OKCANCEL);	
+	}
+
 	using namespace Error;
-	
+	if (!init) throw UNINITIALIZED;
+
 	CheckOverflow();
 
 	DWORD msg_bytes=0; 
@@ -131,6 +149,8 @@ std::string SerialPort::Read(int bytes_to_read) {
 }
 
 int SerialPort::size() {
+	using namespace Error;
+	if (!init) throw UNINITIALIZED ;
 	
 	COMSTAT comStat = {0};
 	DWORD errors;
@@ -138,11 +158,14 @@ int SerialPort::size() {
 	if (ClearCommError(hComPort, &errors, &comStat)) {
 		return comStat.cbInQue + comStat.cbOutQue;
 	} else {
-		return 1000;
+		return 0;
 	}
 }
 
 void SerialPort::CheckOverflow() {
+	using namespace Error;
+	if (!init) throw UNINITIALIZED ;
+
 	using namespace Error;
 	// Prevents buffer overflow
 	
