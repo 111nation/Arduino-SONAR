@@ -72,6 +72,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.Transparency();
 
 			SONAR.com = "COM3";
+			SONAR.Init();
 
 			break;
 		}
@@ -291,17 +292,18 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 				// DISPLAY TIMER
 				case APPLICATION_TIMER: {
 					// CONNECTS TO ARDUINO
-					if (SONAR.status != STATUS::OK) {
+					Paint_Status(hWnd, SONAR.status);			
+					if (SONAR.status != STATUS::DISCONNECTED) {
+						SONAR.com = "COM3";
 						SONAR.Init();
-						Paint_Status(hWnd, SONAR.status);			
-						SonarDisplay(hWnd, -90);
+						SonarDisplay(hWnd, -135);
 						break;
 					}
 
 					// UPDATES COORDINATES OF ARDUINO
 					if (SONAR.Update()) break;
 					
-					if (SONAR.PostConfirm()) break;
+					//if (SONAR.PostConfirm()) break;
 
 					// MOVES THE SONAR DISPLAY TO AREA
 					SonarDisplay(hWnd, SONAR.deg);					
@@ -377,7 +379,7 @@ bool SONAR::PostError() {
 }
 
 bool SONAR::PostConfirm() {
-	MessageBoxA(NULL, std::to_string(ARDUINO->size()).c_str(), "SIZE", MB_OK);
+	//MessageBoxA(NULL, std::to_string(ARDUINO->size()).c_str(), "SIZE", MB_OK);
 	return SendMsg("OK");
 }
 
@@ -385,7 +387,7 @@ bool SONAR::SendMsg(std::string msg) {
 	try {
 		std::stringstream ss;
 		ss << cMSG << msg << cEND;
-		//MessageBoxA(NULL, ss.str().c_str(), "DEG", MB_OK);
+	//	MessageBoxA(NULL, ss.str().c_str(), "DEG", MB_OK);
 		ARDUINO->Write(ss.str());
 	} catch (int err) {
 		GetErr(err);	

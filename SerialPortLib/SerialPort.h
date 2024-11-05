@@ -24,9 +24,9 @@ class SerialPort {
 	private:
 	HANDLE hComPort;
 	DCB dcbSettings = {0};
+	void CheckOverflow();
 
 	public:
-
 	SerialPort(std::string sPort);
 	~SerialPort();
 	void Settings(int Baud_Rate, int Bytes);
@@ -57,7 +57,7 @@ SerialPort::SerialPort(std::string sPort) {
 	}
 
 	// Set timeouts to prevent indefinite blocking
-	COMMTIMEOUTS timeouts = { 0 };
+	/*COMMTIMEOUTS timeouts = { 0 };
 	timeouts.ReadIntervalTimeout = 1;          
 	timeouts.ReadTotalTimeoutConstant = 10;     
 	timeouts.ReadTotalTimeoutMultiplier = 1;
@@ -67,7 +67,7 @@ SerialPort::SerialPort(std::string sPort) {
 	if (!SetCommTimeouts(hComPort, &timeouts)) {
 		CloseHandle(hComPort);
 		throw ACCESS_DENIED; // Handle failed timeout setting
-	}	
+	}*/	
 
 }
 
@@ -98,6 +98,8 @@ void SerialPort::Settings(int Baud_Rate, int Bytes) {
 void SerialPort::Write(std::string msg) {
 	using namespace Error;
 	
+	CheckOverflow();
+
 	DWORD bytesSent = 0; // Stores number of bytes sent: Ensures all data sent
 	
 	// Error writing message	
@@ -111,6 +113,8 @@ void SerialPort::Write(std::string msg) {
 
 std::string SerialPort::Read(int bytes_to_read) {
 	using namespace Error;
+	
+	CheckOverflow();
 
 	DWORD msg_bytes=0; 
 	char msg[bytes_to_read + 1]; // Sets size for string in bytes, plus added space for null terminator
@@ -136,6 +140,25 @@ int SerialPort::size() {
 	} else {
 		return 1000;
 	}
+}
+
+void SerialPort::CheckOverflow() {
+	using namespace Error;
+	// Prevents buffer overflow
+	
+	DWORD err;
+	
+	if (!ClearCommError(hComPort, &err, NULL)) {
+		throw COMM_ERR;
+	}
+
+	// Clears buffer if overflow
+	if (err == CE_OVERRUN || err == CE_RXOVER) {
+		if (!PurgeComm(hComPort, PURGE_RXCLEAR)) {
+			throw COMM_ERR;
+		}
+	}
+	
 }
 
 SerialPort::~SerialPort() { 
