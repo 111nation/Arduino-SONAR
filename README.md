@@ -1,4 +1,3 @@
-Goals:
+Sonar Project Using Arduino Uno R3 and Win32 GUI
 
-- Link to Arduino\
-- Build Arduino mechanics
+Currently project is severely broken and unfinished
