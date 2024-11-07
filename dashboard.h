@@ -10,6 +10,7 @@
 
 // Libraries
 #include "PaintLib/paint.h"
+#include "status.h"
 
 #define WINDOW_WIDTH 1000  
 #define TITLE_BAR 23
@@ -46,11 +47,5 @@ const int window_corner = 20;
 void Paint_Minimize(HWND hWnd, bool bHover);
 void Paint_Exit(HWND hWnd, bool bHover);
 
-//=====STATUS DATA============
-namespace STATUS {
-	const int DISCONNECTED = 1;
-	const int WARNING = 2;
-	const int OK = 3;
-}
 void Paint_Status(HWND hWnd, int status);
 

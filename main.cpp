@@ -71,9 +71,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			paint.hWnd = hWnd;
 			paint.Transparency();
 
-			SONAR.com = "COM3";
-			SONAR.Init();
-
 			break;
 		}
 
@@ -292,22 +289,22 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 				// DISPLAY TIMER
 				case APPLICATION_TIMER: {
 					// CONNECTS TO ARDUINO
-					Paint_Status(hWnd, SONAR.status);			
-					if (SONAR.status != STATUS::DISCONNECTED) {
-						SONAR.com = "COM3";
+					
+					Paint_Status(hWnd, SONAR.status);
+
+					// If disconnected, attempt to reconnect
+					if (SONAR.status == STATUS::DISCONNECTED) {
+						SONAR.port = "COM3";
 						SONAR.Init();
-						SonarDisplay(hWnd, -135);
-						break;
+						SonarDisplay(hWnd, SONAR.deg);
 					}
 
-					// UPDATES COORDINATES OF ARDUINO
-					if (SONAR.Update()) break;
-					
-					//if (SONAR.PostConfirm()) break;
+					// If still disconnected do not continue
+					if (SONAR.status == STATUS::DISCONNECTED) break;
 
-					// MOVES THE SONAR DISPLAY TO AREA
+				//	SONAR.Init();
 					SonarDisplay(hWnd, SONAR.deg);					
-					
+						
 					return 0;
 
 					break;
@@ -323,6 +320,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 }
 
 // SONAR CLASS
+/*
 bool SONAR::Init() {
 	if (ARDUINO) {
 		delete ARDUINO;
@@ -479,4 +477,4 @@ void SONAR::GetErr(int err) {
 			status = STATUS::WARNING;
 			break;
 	}
-}
+} */
