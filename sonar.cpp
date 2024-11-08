@@ -1,14 +1,19 @@
 #include "sonar.h"
 
+#include <sstream>
+
 bool SONAR::Init() {
 	// Tries to initialize and open the serial port 
 	// for reading
 	ClearHandle();
 	
+	deg = 0;
+	prox = 0;
+
 	hPort = CreateFileA(
 			port.c_str(),
 			GENERIC_READ | GENERIC_WRITE,
-			FILE_SHARE_WRITE | FILE_SHARE_READ,
+			0,
 			NULL,
 			OPEN_EXISTING,
 			FILE_ATTRIBUTE_OFFLINE,
@@ -20,6 +25,10 @@ bool SONAR::Init() {
 
 
 	if (Configure()) {
+		return true;
+	}
+
+	if (isOverflow()) {
 		return true;
 	}
 
@@ -41,7 +50,7 @@ bool SONAR::Configure() {
 	}	
 
 	// SERIAL - SETTINGS
-	dcb.BaudRate = CBR_9600;
+	dcb.BaudRate = CBR_115200;
 	dcb.fParity = FALSE;
 	dcb.fNull = TRUE;
 	dcb.ByteSize = 8;
@@ -80,20 +89,6 @@ bool SONAR::GetStatus() {
 			} else {
 				this->status = STATUS::WARNING;
 			}
-			
-			/*switch (GetLastError()) {
-				case ERROR_FILE_NOT_FOUND:
-				case ERROR_PATH_NOT_FOUND:
-				case ERROR_INVALID_HANDLE:
-				case ERROR_SERIAL_NO_DEVICE:
-				case ERROR_DEV_NOT_EXIST:
-					this->status = STATUS::DISCONNECTED;
-					break;
-					
-				default:
-					this->status = STATUS::WARNING;
-					break;
-			}*/
 		}
 	}
 
@@ -108,12 +103,76 @@ bool SONAR::GetStatus() {
 
 // I/O 
 bool SONAR::Read() {
-	// Checks if device is overflowing
-	DWORD errors;
-	COMSTAT status;
+	COMSTAT status; 
 
+	if (isOverflow(&status)) {
+		return true;
+	}	
+
+	// Only start reading if minimum 5 bytes #0:0\n
+	if (status.cbInQue >= 5) {
+		// Start reading data from port
+		char in[MAX_READ + 1];
+		DWORD bytes;
+
+		// Data read in
+		if (!ReadFile(hPort, &in, MAX_READ, &bytes, NULL)) {
+			GetStatus();
+			return true;
+		}		
+
+		if (bytes >= 5) {
+			// Build data
+			in[bytes] = '\0';
+			msg = std::string(in);
+
+			Parse();
+		} else {
+			return true; // Full message not gathered
+		}
+	}
+
+	return false;
+}
+
+bool SONAR::Write(int deg, int prox) {
+	// Puts message in correct format
+	std::string msg = cMSG + std::to_string(deg) + cDELIM + std::to_string(prox) + cEND;
+
+	if (isOverflow()) { // Checks and clears port if an overflow
+		return true;
+	}
+
+	const char *buf = msg.c_str();
+	DWORD bytes;
+	
+	if (!WriteFile(hPort, buf, msg.length(), &bytes, NULL)) {
+		GetStatus();
+		return true;
+	}
+
+	// Determines if whole message sent
+	if (bytes == msg.length()) {
+		return false; // Successful
+	} else { 
+		GetStatus();
+		return true; // Incomplete operation
+	}
+}
+
+bool SONAR::isOverflow() {
+	// isOverflow without parameters
+	COMSTAT status;
+	return isOverflow(&status);
+}
+
+bool SONAR::isOverflow(LPCOMSTAT status) {
+	// Checks if device is overflowing
+	// Clears device in an event of overflow
+	DWORD errors;
+	
 	// Checks for overflow
-	if (!ClearCommError(hPort, &errors, &status)) {
+	if (ClearCommError(hPort, &errors, status)) {
 		if (errors == CE_OVERRUN || errors == CE_RXOVER) {		
 			if (!PurgeComm(hPort, PURGE_RXABORT | PURGE_RXCLEAR | PURGE_TXABORT | PURGE_TXCLEAR)) {
 				GetStatus();
@@ -124,12 +183,6 @@ bool SONAR::Read() {
 		GetStatus();
 		return true;
 	}
-	
-	// Only start reading is minimum 5 bytes #0:0\n
-	if (status.cbInQue >= 5) {
-		// Start reading data from port
-
-	}
 
 	return false;
 }
@@ -139,6 +192,71 @@ void SONAR::ClearHandle () {
 		CloseHandle(hPort);
 	}
 }
+
+// AUXILLARY METHODS
+bool SONAR::Parse() {
+	// Checks if message complete before proceeding
+	
+	bool begin = false;	// Tracks format of string
+	bool end = false;
+	bool delim = false;
+	std::string temp = msg;
+
+	msg = "";
+	for (unsigned int i = 0; i < temp.length(); i++) {
+		// Truncates msg variable into a shorter and easily parseable string
+		switch (temp[i]) {
+			case cBEGIN:
+				begin = true;
+				break;
+			case cEND:	
+				// Only indicate end if we started message
+				if (begin) {
+					end = true;
+				}
+				break;
+
+			default:
+				if (begin && !end) {
+					if (temp[i] == cDELIM) {
+						delim = true;
+					}
+					
+					msg += temp[i];
+				}
+				break;
+		}	
+		
+		if (end) break; // Breaks out of loop when done
+	}
+
+	// Checks if string in correct format (aka has a delimeter and has begin and end)
+	if (begin && end && delim && !msg.empty()) {
+		// Begin actual parsing	
+		std::string sDeg = "";	// String version of proximity and degree
+		std::string sProx = "";
+		
+		const size_t delim_pos = msg.find(cDELIM);
+		sDeg = msg.substr(0, delim_pos);
+		sProx = msg.substr(delim_pos+1, msg.length()-delim_pos-1);
+	
+		std::stringstream ss;
+		ss.str("");
+		ss << sDeg;
+		deg = 0;	
+		ss >> deg;
+
+		ss.str("");
+		ss << sProx;
+		prox = 0;
+		ss >> prox;
+	} else {
+		return true;
+	}
+
+	return false;	
+}
+
 
 SONAR::~SONAR () {
 	ClearHandle();

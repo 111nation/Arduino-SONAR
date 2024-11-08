@@ -7,10 +7,12 @@
 #include <windows.h>
 
 //=======================SONAR HANDLING===================
+// functions with bool data type return true in an event of an error
+// false if completed successfully
 class SONAR {
 	private:
 	enum {
-		MAX_READ = 12 // MAXIMUM OF 12 bytes to read
+		MAX_READ = 15 // MAXIMUM OF 12 bytes to read
 	};
 
 	// MESSAGING PROTOCOL
@@ -23,16 +25,18 @@ class SONAR {
 	   static const char cEND = '\n';		
 
 	HANDLE hPort;
-	bool GetStatus();
 
-	std::string msg = ""; // Message from arduino
+	bool Parse();
+	bool isOverflow(LPCOMSTAT status);
+	bool isOverflow();
 
 	public:
 	std::string port;	
 	int status = STATUS::DISCONNECTED;
+	std::string msg = ""; // Message from arduino
 
 	// SONAR details
-	int deg = -90;
+	int deg = 0;
 	int prox = 0;
 
 	bool Init();
@@ -41,6 +45,11 @@ class SONAR {
 
 	// I/O Operations
 	bool Read();
+	bool Write(int deg, int prox);
+
+	// UTILITES
+	bool GetStatus();
+
 
 	~SONAR();
 };

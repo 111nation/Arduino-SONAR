@@ -7,7 +7,7 @@ int click_exit = false;
 
 const std::wstring MAIN_CLASS = L"MAIN_CLASS";
 
-#define FPS 1
+#define FPS 10
 #define APPLICATION_TIMER 1
 
 namespace sonar {
@@ -167,7 +167,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			//========STATUS===========
 			// Initialize SONAR display
 			Paint_Status(hWnd, SONAR.status);			
-			
+			SonarDisplay(hWnd, SONAR.deg);	
 			
 			EndPaint(hWnd, &ps);
 			break;
@@ -293,18 +293,21 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 					Paint_Status(hWnd, SONAR.status);
 
 					// If disconnected, attempt to reconnect
-					if (SONAR.status == STATUS::DISCONNECTED) {
+					if (SONAR.status != STATUS::OK) {
 						SONAR.port = "COM3";
 						SONAR.Init();
-						SonarDisplay(hWnd, SONAR.deg);
+						SonarDisplay(hWnd, 90);
 					}
 
 					// If still disconnected do not continue
-					if (SONAR.status == STATUS::DISCONNECTED) break;
+					if (SONAR.status == STATUS::OK) {
+						if(!SONAR.Read()) {
+							// Sends back confirm
+							SONAR.Write(SONAR.deg, SONAR.prox);
+							SonarDisplay(hWnd, SONAR.deg);	
+						}
+					}
 
-				//	SONAR.Init();
-					SonarDisplay(hWnd, SONAR.deg);					
-						
 					return 0;
 
 					break;
@@ -318,163 +321,3 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 	}
 	return DefWindowProc(hWnd, event, wParam, lParam);
 }
-
-// SONAR CLASS
-/*
-bool SONAR::Init() {
-	if (ARDUINO) {
-		delete ARDUINO;
-	}
-
-	try {
-		ARDUINO = new SerialPort(com);
-		status = STATUS::OK;
-	} catch (int err) {
-		// Converts errors into status codes
-		switch (err) {
-			case Error::DISCONNECTED:
-				status = STATUS::DISCONNECTED;
-				break;
-			default:
-				status = STATUS::WARNING;
-				break;
-		}
-
-		delete ARDUINO; 
-
-		return true;	
-	}
-
-	return false;
-}
-
-bool SONAR::Update() {
-	try {
-		std::string data = ARDUINO->Read(BYTES);
-		// Attempts to convert message
-		if (ConvertMessage(data) != 0) {
-			status = STATUS::WARNING;
-		
-			// Let Arduino know to halt due to error
-			PostError();
-			return true;
-		} else {
-			//MessageBoxA(NULL, std::to_string(deg).c_str(), "DEG", MB_OK);
-		}
-	} catch (int err) {
-		PostError();
-		GetErr(err);
-		return true;
-	}
-	
-	PostConfirm();
-
-	return false;
-}
-
-bool SONAR::PostError() {
-	return SendMsg("ERR");
-}
-
-bool SONAR::PostConfirm() {
-	//MessageBoxA(NULL, std::to_string(ARDUINO->size()).c_str(), "SIZE", MB_OK);
-	return SendMsg("OK");
-}
-
-bool SONAR::SendMsg(std::string msg) {
-	try {
-		std::stringstream ss;
-		ss << cMSG << msg << cEND;
-	//	MessageBoxA(NULL, ss.str().c_str(), "DEG", MB_OK);
-		ARDUINO->Write(ss.str());
-	} catch (int err) {
-		GetErr(err);	
-		return true;
-	}
-	return false;
-}
-
-SONAR::~SONAR () {
-	if (ARDUINO != NULL) {
-		delete ARDUINO;
-	}
-}
-
-//====================
-// UTILITIES
-//====================
-int SONAR::ConvertMessage(std::string msg) {
-	const int old_deg = deg;
-	const int old_prox = proximity;
-
-	std::string sDeg = "";
-	std::string sProx = "";
-
-	// Breaks string into Degree and Proximity sections
-	bool parse = false;
-	bool parsedDeg = false;
-	bool end = false;
-
-	for (unsigned int i=0; i < msg.length(); i++) {
-		// If detects special character
-		// tells program what to do
-		switch (msg[i]) {
-			case cBEGIN:
-				parse = true;
-				continue;
-			case cDELIM:
-				if (parse && !end) {
-					parsedDeg = true;
-				}
-				continue;
-			case cEND:
-				if (parse && parsedDeg) {
-					end = true;
-				}
-				break;
-		}
-
-		// Extracts information
-		if (parse && !end) {
-			if (parsedDeg == false) {
-				// PARSING DEGREE
-				sDeg += msg[i];
-			} else {
-				sProx += msg[i];
-			}
-		}
-	}
-	
-	try {
-		if (parse == false || sDeg == "" || sProx == "" || end == false) {
-			throw "Data recieved was incomplete";	
-		}
-			
-		// NOTE: please add another buffer variable logic to store incomplete messages there so that
-		// 	i can wait for next piece of buffer and recontinue reading so that program is optimized
-
-		deg = std::stoi(sDeg);
-		deg -= 90; // Match the display output degree system
-		proximity = std::stoi(sProx);
-	// Reroll to previous versions if failed
-	} catch (...) {
-		deg = old_deg;
-		proximity = old_prox;
-		return 1;
-	}
-
-	return 0;
-	
-}
-
-void SONAR::GetErr(int err) {
-	// Converts errors into status codes
-	switch (err) {
-		case Error::DISCONNECTED:
-			status = STATUS::DISCONNECTED;
-			break;
-		default:
-			status = STATUS::WARNING;
-			break;
-	}
-} */

@@ -177,22 +177,22 @@ void DegreesText() {
 	int CHAR_WIDTH = 4;
 
 	// MAIN 0; 90; 180; 270; 360
-	std::string text = "0";
+	std::string text = "90";
 	paint.x = (int) (SONAR_DISPLAY.x + SONAR_DISPLAY.xend)/2 - (CHAR_WIDTH * text.length());
 	paint.y = (int) SONAR_DISPLAY.y - TEXT_MARGIN;
 	paint.Text(text);
 
-	text = "180";
+	text = "270";
 	paint.x = (int) (SONAR_DISPLAY.x + SONAR_DISPLAY.xend)/2 - (CHAR_WIDTH * text.length());
 	paint.y = (int) SONAR_DISPLAY.yend;
 	paint.Text(text);
 
-	text = "270";
+	text = "0";
 	paint.x = (int) (SONAR_DISPLAY.x - TEXT_MARGIN) - (CHAR_WIDTH * text.length());
 	paint.y = (int) (SONAR_DISPLAY.y + SONAR_DISPLAY.yend - TITLE_BAR) / 2;
 	paint.Text(text);
 
-	text = "90";
+	text = "180";
 	paint.x = (int) (SONAR_DISPLAY.xend) + (CHAR_WIDTH * text.length());
 	paint.Text(text);
 }
@@ -249,7 +249,7 @@ void Nav(double deg) {
 
 void RadiiXY(int centerx, int centery, double deg,  int * x, int * y) {
 	// Recieve degrees in degrees, convert to radiants
-	const double RAD = (deg-90) * (PI / 180.0);		
+	const double RAD = (deg-180) * (PI / 180.0);		
 	
 	// Gets x,y value which lies on the circumference	
 	*x = centerx + (int) ((RADII-RADII_MARGIN) * cos(RAD));
