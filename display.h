@@ -64,7 +64,7 @@ namespace display {
 
 	//=====TRACKING PROXIMITY DATA=============
 	const int MAX_DEG = 180 + 1;
-	int arrProx[MAX_DEG] = {0};
+	const int MAX_PROX = 300;
 	// PROXIMITY		60,	70,	0	
 	// COLOR OF READING	FAR, 	FAREST, CLOSEST
 
@@ -83,3 +83,4 @@ void SonarDisplay(HWND hWnd, double deg, double prox);
 void DegreesText();
 void Nav(double deg);
 void Proximity(int deg, int prox);
+void InitProx();

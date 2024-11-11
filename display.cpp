@@ -4,6 +4,7 @@
 namespace display {
 		Paint paint;
 		circle arrCircles [CIRCLES];
+		int arrProx[MAX_DEG] = {0};
 };
 
 #define PI 2 * acos(0.0)
@@ -150,6 +151,7 @@ void SonarDisplay(HWND hWnd, double deg, double prox) {
 		
 	
 	DegreesText();
+	Proximity((int) deg, (int) prox);
 	::Nav(deg);
 	
 	// Transfer buffer onto window
@@ -219,7 +221,7 @@ void Nav(double deg) {
 		
 
 	paint.Pie(xrad1, yrad1, xrad2, yrad2, false);
-	
+
 	//====NAVIGATION PIN====
 	paint.border.color = arrColors[CIRCLES];
 	paint.border.width = 4;
@@ -232,13 +234,23 @@ void Nav(double deg) {
 	paint.Line();	
 }
 
-void RadiiXY(int centerx, int centery, double deg,  int * x, int * y) {
+void RadiiXY(int centerx, int centery, double deg,  int * x, int * y, int radius) {
 	// Recieve degrees in degrees, convert to radiants
 	const double RAD = (deg-180) * (PI / 180.0);		
 	
 	// Gets x,y value which lies on the circumference	
-	*x = centerx + (int) ((RADII-RADII_MARGIN) * cos(RAD));
-	*y = centery + (int) ((RADII-RADII_MARGIN) * sin(RAD));
+	*x = centerx + (int) ((radius) * cos(RAD));
+	*y = centery + (int) ((radius) * sin(RAD));
+}
+
+void RadiiXY(int centerx, int centery, double deg,  int * x, int * y) {
+	RadiiXY(centerx, centery, deg, x, y, RADII-RADII_MARGIN);
+}
+
+void InitProx() {
+	for (int i = 0; i < MAX_DEG; i++) {
+		arrProx [i] = 0;
+	}
 }
 
 void Proximity(int deg, int prox) {
@@ -251,31 +263,54 @@ void Proximity(int deg, int prox) {
 
 	paint.Reset();
 	paint.border.color = PROX_COLORS::_NEAR;
-	paint.border.width = 1;
+	paint.border.width = 5;
 
-	const int PROX_DISPLAY = 20; // Proximity readings must be close to pin to be displayed 
+	const int PROX_DISPLAY = 45; // Proximity readings must be close to pin to be displayed 
 	// Updates the colour of all prox readings
 	for (int i = 0; i < MAX_DEG; i++) {
 		// Determines distance to the actual reading degree
 		// or 'pin' in DEGREES
 		int distance = abs(deg - i);
-		
+	
+		if (arrProx[i] == 0) continue; // Skip no proximity display
+
 		// SKIP DISPLAYING FAR PROXIMITY READINGS
 		if (distance <= PROX_DISPLAY) {
 			// Determine coordinates of line
-			int circmfx, circumfy;
-		       	int centerx, centery;	
-
-			// Determine coordinates on circumference
+		       	int circumfx, circumfy;	
+			int centerx, centery;
+			
+			// CIRCUMFERENCE (ALWAYS CONSTANT)
+			RadiiXY(NAV.xend, NAV.yend, i, &circumfx, &circumfy, RADII-RADII_MARGIN*2);
+		
+			// START COORDINATES (INDICATES ACTUAL DISTANCE)
+			const double rad_perc = (double) (arrProx[i] / (double) MAX_PROX); 	
+			const int prox_distance = (int) ((RADII-RADII_MARGIN) * rad_perc);
+			RadiiXY(NAV.xend, NAV.yend, i, &centerx, &centery, prox_distance);
+			
+			paint.xend = circumfx;
+			paint.yend = circumfy;
+			paint.x = centerx;
+			paint.y = centery;
 
 			// Displaying within range
-			if (distance < PROX_DISPLAY/3) {
+			/*if (distance < PROX_DISPLAY/3) {
 				// Print bright
+				paint.border.color = PROX_COLORS::_NEAR;
 			} else if (distance > (2*PROX_DISPLAY)/3) {
 				// Print far
+				paint.border.color = PROX_COLORS::_MID;
 			} else {
 				// Print middle
-			}	
+				paint.border.color = PROX_COLORS::_FAR;
+			}*/	
+
+			paint.Line();
+		} else {
+			// Set proximity value to 0 to not display again
+			// End-of-lifetime
+
+			arrProx[i] = 0;
 		}
 	}	
 

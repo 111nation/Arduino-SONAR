@@ -70,6 +70,9 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			Paint paint;
 			paint.hWnd = hWnd;
 			paint.Transparency();
+			
+			// Display Initializer
+			InitProx();
 
 			break;
 		}
@@ -288,7 +291,6 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 				// DISPLAY TIMER
 				case APPLICATION_TIMER: {
-					break; // Remove to uncomment
 					// CONNECTS TO ARDUINO
 					
 					Paint_Status(hWnd, SONAR.status);
@@ -297,7 +299,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 					if (SONAR.status != STATUS::OK) {
 						SONAR.port = "COM3";
 						SONAR.Init();
-						SonarDisplay(hWnd, 90, SONAR.prox);
+						SonarDisplay(hWnd, 90, SONAR.prox); // Do not display prox
 					}
 
 					// If still disconnected do not continue

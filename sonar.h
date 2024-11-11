@@ -12,7 +12,7 @@
 class SONAR {
 	private:
 	enum {
-		MAX_READ = 20 // MAXIMUM OF 32 bytes to read NB: If sonar updates to slow at higher deg
+		MAX_READ = 32 // MAXIMUM OF 32 bytes to read NB: If sonar updates to slow at higher deg
 			      // increase the maximum bytes to read
 	};
 
