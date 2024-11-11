@@ -44,10 +44,42 @@ namespace display {
 
 	const int TEXT_MARGIN = 20; // Margin of degree text
 
+	const int RADIAL_SPAN = 20; // in degrees
+
+	// NAVIGATION DATA	
+	struct Nav { 
+		int x = 0;
+		int y = 0;
+		int xend = 0;
+		int yend = 0;
+	};
+
+	const Nav NAV {
+		SONAR_DISPLAY.x,
+		SONAR_DISPLAY.y,
+		(int) ((SONAR_DISPLAY.x + SONAR_DISPLAY.xend) / 2) - 1 ,
+		(int) ((SONAR_DISPLAY.y + SONAR_DISPLAY.yend) / 2) - 1
+	};
+
+
+	//=====TRACKING PROXIMITY DATA=============
+	const int MAX_DEG = 180 + 1;
+	int arrProx[MAX_DEG] = {0};
+	// PROXIMITY		60,	70,	0	
+	// COLOR OF READING	FAR, 	FAREST, CLOSEST
+
+	// Fading away completly starts when proximity is farther than 30-45deg
+	// Proximity Colours
+	namespace PROX_COLORS {
+	       	const COLORREF 
+			_NEAR = RGB(218, 55, 60),
+			_MID = RGB(180, 28, 33),
+			_FAR = RGB(140, 0, 5);
+	};
 };
 
 // Drawing functions
-void SonarDisplay(HWND hWnd, double deg);
+void SonarDisplay(HWND hWnd, double deg, double prox);
 void DegreesText();
 void Nav(double deg);
-
+void Proximity(int deg, int prox);

@@ -26,6 +26,7 @@
 #define ACCENT_2 RGB(4, 6, 8) // Darkest
 #define ACCENT_3 RGB(88, 101, 242)
 
+
 //=====TITLE BUTTONS DATA=======
 const int button_width = 0.03 * WINDOW_WIDTH;	
 const int button_height = TITLE_BAR;
@@ -48,4 +49,5 @@ void Paint_Minimize(HWND hWnd, bool bHover);
 void Paint_Exit(HWND hWnd, bool bHover);
 
 void Paint_Status(HWND hWnd, int status);
+
 

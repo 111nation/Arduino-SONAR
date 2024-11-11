@@ -237,19 +237,26 @@ bool SONAR::Parse() {
 		std::string sProx = "";
 		
 		const size_t delim_pos = msg.find(cDELIM);
+		if (delim_pos == std::string::npos) {
+			return true; // Delimeter not found
+		}
+
+
 		sDeg = msg.substr(0, delim_pos);
 		sProx = msg.substr(delim_pos+1, msg.length()-delim_pos-1);
 	
-		std::stringstream ss;
-		ss.str("");
-		ss << sDeg;
-		deg = 0;	
-		ss >> deg;
+		// Attempts parsing degree and proximity
+		int oldDeg = deg;
+		int oldProx = prox;
 
-		ss.str("");
-		ss << sProx;
-		prox = 0;
-		ss >> prox;
+		std::stringstream ssDeg(sDeg);
+		std::stringstream ssProx(sProx);
+
+		if (!(ssDeg >> deg) || !(ssProx >> prox)) {
+			deg = oldDeg;
+			prox = oldProx;
+			return true;
+		}
 	} else {
 		return true;
 	}

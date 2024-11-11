@@ -167,7 +167,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 			//========STATUS===========
 			// Initialize SONAR display
 			Paint_Status(hWnd, SONAR.status);			
-			SonarDisplay(hWnd, SONAR.deg);	
+			SonarDisplay(hWnd, 135, 50);	
 			
 			EndPaint(hWnd, &ps);
 			break;
@@ -288,6 +288,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 				// DISPLAY TIMER
 				case APPLICATION_TIMER: {
+					break; // Remove to uncomment
 					// CONNECTS TO ARDUINO
 					
 					Paint_Status(hWnd, SONAR.status);
@@ -296,7 +297,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 					if (SONAR.status != STATUS::OK) {
 						SONAR.port = "COM3";
 						SONAR.Init();
-						SonarDisplay(hWnd, 90);
+						SonarDisplay(hWnd, 90, SONAR.prox);
 					}
 
 					// If still disconnected do not continue
@@ -304,7 +305,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 						if(!SONAR.Read()) {
 							// Sends back confirm
 							SONAR.Write(SONAR.deg, SONAR.prox);
-							SonarDisplay(hWnd, SONAR.deg);	
+							SonarDisplay(hWnd, SONAR.deg, SONAR.prox);	
 						}
 					}
 

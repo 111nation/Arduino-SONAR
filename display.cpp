@@ -12,7 +12,7 @@ using namespace display;
 
 void RadiiXY(int centerx, int centery, double deg,  int * x, int * y);
 
-void SonarDisplay(HWND hWnd, double deg) {
+void SonarDisplay(HWND hWnd, double deg, double prox) {
 	paint.ClearDC();
 	const COLORREF transparent_color = RGB(0,0,0);
 
@@ -150,7 +150,7 @@ void SonarDisplay(HWND hWnd, double deg) {
 		
 	
 	DegreesText();
-	Nav(deg);
+	::Nav(deg);
 	
 	// Transfer buffer onto window
 	TransparentBlt(hDC, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR,
@@ -158,7 +158,6 @@ void SonarDisplay(HWND hWnd, double deg) {
 			transparent_color); 
 
 	//BitBlt(hDC, 0, TITLE_BAR, WINDOW_WIDTH, WINDOW_HEIGHT+TITLE_BAR, paint.area, 0, TITLE_BAR, SRCCOPY); 
-
 	DeleteObject(hBitmap);
 	DeleteDC(paint.area);
 	ReleaseDC(hWnd, hDC);
@@ -200,20 +199,6 @@ void DegreesText() {
 void Nav(double deg) {
 	paint.Reset();
 	
-	struct Nav { 
-		int x = 0;
-		int y = 0;
-		int xend = 0;
-		int yend = 0;
-	};
-
-	const Nav NAV {
-		SONAR_DISPLAY.x,
-		SONAR_DISPLAY.y,
-		(int) ((SONAR_DISPLAY.x + SONAR_DISPLAY.xend) / 2) - 1 ,
-		(int) ((SONAR_DISPLAY.y + SONAR_DISPLAY.yend) / 2) - 1
-	};
-	
 	//===NAVIGATION ARC===
 	paint.Reset();
 	paint.color = arrColors[CIRCLES-1];
@@ -228,7 +213,7 @@ void Nav(double deg) {
 	int yrad2 = 0;
 	
 	// Figures out starting radial
-	RadiiXY(NAV.xend, NAV.yend, deg-20, &xrad1, &yrad1);
+	RadiiXY(NAV.xend, NAV.yend, deg-RADIAL_SPAN, &xrad1, &yrad1);
 	// Figures out ending radial
 	RadiiXY(NAV.xend, NAV.yend, deg, &xrad2, &yrad2);
 		
@@ -254,5 +239,45 @@ void RadiiXY(int centerx, int centery, double deg,  int * x, int * y) {
 	// Gets x,y value which lies on the circumference	
 	*x = centerx + (int) ((RADII-RADII_MARGIN) * cos(RAD));
 	*y = centery + (int) ((RADII-RADII_MARGIN) * sin(RAD));
+}
+
+void Proximity(int deg, int prox) {
+	// Calculates and displays proximity data, done LAST
+	// Recieved values are the updated proximity values
+	if (deg > 180) deg = 180; // Prevent errors by making sure
+	else if (deg < 0) deg = 0;
+	
+	arrProx[deg] = prox; // Assigns the proximity reading to the associated degree
+
+	paint.Reset();
+	paint.border.color = PROX_COLORS::_NEAR;
+	paint.border.width = 1;
+
+	const int PROX_DISPLAY = 20; // Proximity readings must be close to pin to be displayed 
+	// Updates the colour of all prox readings
+	for (int i = 0; i < MAX_DEG; i++) {
+		// Determines distance to the actual reading degree
+		// or 'pin' in DEGREES
+		int distance = abs(deg - i);
+		
+		// SKIP DISPLAYING FAR PROXIMITY READINGS
+		if (distance <= PROX_DISPLAY) {
+			// Determine coordinates of line
+			int circmfx, circumfy;
+		       	int centerx, centery;	
+
+			// Determine coordinates on circumference
+
+			// Displaying within range
+			if (distance < PROX_DISPLAY/3) {
+				// Print bright
+			} else if (distance > (2*PROX_DISPLAY)/3) {
+				// Print far
+			} else {
+				// Print middle
+			}	
+		}
+	}	
+
 }
 

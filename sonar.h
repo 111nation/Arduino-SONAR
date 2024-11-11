@@ -12,7 +12,8 @@
 class SONAR {
 	private:
 	enum {
-		MAX_READ = 15 // MAXIMUM OF 12 bytes to read
+		MAX_READ = 20 // MAXIMUM OF 32 bytes to read NB: If sonar updates to slow at higher deg
+			      // increase the maximum bytes to read
 	};
 
 	// MESSAGING PROTOCOL
@@ -37,7 +38,7 @@ class SONAR {
 
 	// SONAR details
 	int deg = 0;
-	int prox = 0;
+	int prox = 0; // 2 - 300 cm
 
 	bool Init();
 	bool Configure();
