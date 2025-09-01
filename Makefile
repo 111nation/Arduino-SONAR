@@ -1,7 +1,7 @@
 CXX = g++
 CFLAGS = -std=c++14
-LIB = dashboard.h display.h main.h sonar.h status.h ./PaintLib/font.h ./PaintLib/paint.h ./SerialPortLib/SerialPort.h
-OBJ = dashboard.cpp display.cpp main.cpp sonar.cpp ./PaintLib/font.o ./PaintLib/paint.o ./SerialPortLib/serial.o
+LIB = dashboard.h display.h main.h sonar.h status.h ./PaintLib/font.h ./PaintLib/paint.h
+OBJ = dashboard.cpp display.cpp main.cpp sonar.cpp ./PaintLib/font.o ./PaintLib/paint.o
 BIN = Sonar
 
 all: $(BIN)
@@ -9,9 +9,6 @@ all: $(BIN)
 
 $(BIN): $(OBJ)
 	@$(CXX) $(OBJ) -o $(BIN) -luser32 -lgdi32 -lmsimg32
-
-serial.o: $(LIB) ./PaintLib/serial.cpp
-	@$(CXX) $(CFLAGS) -c ./PaintLib/serial.cpp
 
 paint.o: $(LIB) ./PaintLib/paint.cpp
 	@$(CXX) $(CFLAGS) -c ./PaintLib/paint.cpp
