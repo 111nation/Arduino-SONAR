@@ -67,6 +67,7 @@ void program () {
 		// 		     ERROR HANDLING
 		// ==================================================
 
+        using namespace Error;
 		switch (error) {
 			case DISCONNECTED: 
 				std::cout << "DISCONNECTED\n";
