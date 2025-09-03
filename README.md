@@ -8,9 +8,9 @@ _Recreation of a submarine SONAR system. Project includes the Arduino's source c
 </div>
 
 <div>
-    <img height="200" alt="image" src="https://github.com/user-attachments/assets/fd01f291-f6b8-4dc8-ad3e-15eb93ad70e3" />
-    <img height="200" alt="Screenshot 2025-09-03 203529" src="https://github.com/user-attachments/assets/7539c8e6-6c2e-410d-9082-55901f87c384" />
-    <img height="200" src="https://github.com/user-attachments/assets/48126b50-d940-4843-a1e7-0e4660bf7fe4" />
+    <img height="150" alt="image" src="https://github.com/user-attachments/assets/fd01f291-f6b8-4dc8-ad3e-15eb93ad70e3" />
+    <img height="150" alt="Screenshot 2025-09-03 203529" src="https://github.com/user-attachments/assets/7539c8e6-6c2e-410d-9082-55901f87c384" />
+    <img height="150" src="https://github.com/user-attachments/assets/48126b50-d940-4843-a1e7-0e4660bf7fe4" />
 </div>
 
 Dashboard program is created from scratch using Win32 API and my [custom GDI Wrapper](https://github.com/111nation/GDI-Paint).
