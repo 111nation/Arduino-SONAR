@@ -30,6 +30,10 @@ Dashboard program is created from scratch using Win32 API and my [custom GDI Wra
     </tr>
 </table>
 
+
+> [!WARNING]
+> Currently there is a display bug. At a random time the Dashboard will randomly have thinner lines and be unresponsive. To fix close program and open it again.
+
 ## Requirements
 
 ### Software
