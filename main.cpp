@@ -5,6 +5,7 @@ bool hover_exit = false;
 int click_minimize = false;
 int click_exit = false;
 
+const std::string PORT = "COM4";
 const std::wstring MAIN_CLASS = L"MAIN_CLASS";
 
 #define FPS 10
@@ -297,7 +298,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT event, WPARAM wParam, LPARAM lParam)
 
 					// If disconnected, attempt to reconnect
 					if (SONAR.status != STATUS::OK) {
-						SONAR.port = "COM3";
+						SONAR.port = PORT;
 						SONAR.Init();
 						SonarDisplay(hWnd, 90, SONAR.prox); // Do not display prox
 					}
