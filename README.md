@@ -51,7 +51,7 @@ Dashboard program is created from scratch using Win32 API and my [custom GDI Wra
 ### Compiling the Arduino's Code
 
 > [!TIP]
-> View the hardware schematic [here](https://www.tinkercad.com/things/3Z7AwWb3J9N-arduino-sonar?sharecode=FVrB-NFXI3Xmc8mkWua5r6s-1oXGtLLmNKCZMzZmYlg)
+> View the hardware schematic [here](https://www.tinkercad.com/things/3Z7AwWb3J9N-arduino-sonar?sharecode=FVrB-NFXI3Xmc8mkWua5r6s-1oXGtLLmNKCZMzZmYlg) <br />
 > The Sonar only starts once you open the application and the application picks up the Arduino
 
 Wire the components according to comment in `Arduino/Arduino.ino`. Or modify the global variables to your desired pins. Compile and upload the code into the Arduino.
